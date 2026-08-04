@@ -39,7 +39,7 @@ export default function App() {
 
   if (!user) return <LoginPage login={login} dark={dark} setDark={setDark} installPrompt={installPrompt} />;
 
-  const props = { user, dark, setDark, setPage, logout, installPrompt };
+  const props = { user, dark, setDark, setPage, logout, installPrompt, page };
 
   return (
     <Layout {...props}>
@@ -61,14 +61,53 @@ export default function App() {
   );
 }
 
-function Layout({ children, user, dark, setDark, setPage, logout, installPrompt }: any) {
+function Layout({ children, user, dark, setDark, setPage, logout, installPrompt, page }: any) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const adminNav = [
+    { icon: '🏠', label: 'Dashboard', p: 'home' },
+    { icon: '👥', label: 'Members', p: 'members' },
+    { icon: '➕', label: 'Add Member', p: 'create-member' },
+    { icon: '🏋️', label: 'Trainers', p: 'trainers' },
+    { icon: '📦', label: 'Packages', p: 'packages' },
+    { icon: '✅', label: 'Attendance', p: 'attendance' },
+    { icon: '💳', label: 'Payments', p: 'payments' },
+    { icon: '⚠️', label: 'Alerts', p: 'alerts' },
+    { icon: '📊', label: 'Analytics', p: 'analytics' },
+    { icon: '🏢', label: 'Branches', p: 'branches' },
+  ];
+
+  const memberNav = [
+    { icon: '🏠', label: 'Dashboard', p: 'home' },
+    { icon: '📍', label: 'Check In', p: 'checkin' },
+    { icon: '🏋️', label: 'Workout', p: 'workout' },
+    { icon: '🥗', label: 'Diet Plan', p: 'diet' },
+    { icon: '📈', label: 'Progress', p: 'progress' },
+  ];
+
+  const trainerNav = [
+    { icon: '🏠', label: 'Dashboard', p: 'home' },
+    { icon: '👥', label: 'My Clients', p: 'members' },
+    { icon: '🏋️', label: 'Workouts', p: 'workout' },
+    { icon: '🥗', label: 'Diet Plans', p: 'diet' },
+    { icon: '📏', label: 'Measurements', p: 'progress' },
+  ];
+
+  const navItems = user.role === 'MEMBER' ? memberNav : (user.role === 'PERSONAL_TRAINER' || user.role === 'FLOOR_TRAINER') ? trainerNav : adminNav;
+
   return (
     <div className={`min-h-screen transition-colors ${dark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Top Nav */}
       <nav className={`sticky top-0 z-50 px-4 py-3 flex items-center justify-between border-b ${dark ? 'bg-gray-800/95 border-gray-700 backdrop-blur' : 'bg-white/95 border-gray-200 backdrop-blur'}`}>
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setPage('home')}>
-          <span className="text-xl">💪</span>
-          <span className="font-bold text-lg">FitZone</span>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`p-2 rounded-lg md:hidden ${dark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>☰</button>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setPage('home')}>
+            <span className="text-xl">💪</span>
+            <span className="font-bold text-lg hidden sm:inline">FitZone</span>
+          </div>
+          {page !== 'home' && (
+            <button onClick={() => setPage('home')} className={`text-sm px-2 py-1 rounded-lg ${dark ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>← Back</button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setDark(!dark)} className={`p-2 rounded-lg ${dark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} title="Toggle theme">{dark ? '☀️' : '🌙'}</button>
@@ -77,7 +116,47 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt 
           <button onClick={logout} className={`text-sm px-3 py-1.5 rounded-lg border ${dark ? 'border-gray-600 text-gray-400 hover:text-red-400 hover:border-red-400' : 'border-gray-300 text-gray-600 hover:text-red-500'}`}>Logout</button>
         </div>
       </nav>
-      <main className="max-w-6xl mx-auto p-4 md:p-6">{children}</main>
+
+      <div className="flex">
+        {/* Sidebar - Desktop always visible, Mobile toggle */}
+        <aside className={`fixed md:sticky top-[57px] left-0 h-[calc(100vh-57px)] w-60 z-40 overflow-y-auto border-r transition-transform duration-300 ${dark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+          <div className="p-3 space-y-1">
+            {navItems.map((item) => (
+              <button
+                key={item.p}
+                onClick={() => { setPage(item.p as Page); setSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-colors ${
+                  page === item.p
+                    ? (dark ? 'bg-green-500/10 text-green-400 font-medium' : 'bg-green-50 text-green-700 font-medium')
+                    : (dark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')
+                }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* User info at bottom */}
+          <div className={`absolute bottom-0 left-0 right-0 p-3 border-t ${dark ? 'border-gray-700' : 'border-gray-200'}`}>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">
+                {user.firstName[0]}{user.lastName[0]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium truncate">{user.firstName} {user.lastName}</p>
+                <p className={`text-[10px] truncate ${dark ? 'text-gray-500' : 'text-gray-400'}`}>{user.role.replace(/_/g, ' ')}</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Overlay for mobile sidebar */}
+        {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />}
+
+        {/* Main Content */}
+        <main className="flex-1 min-h-[calc(100vh-57px)] p-4 md:p-6 max-w-5xl">{children}</main>
+      </div>
     </div>
   );
 }
