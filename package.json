@@ -1,0 +1,18 @@
+{
+  "name": "gymapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise Multi-Branch Gym Management Platform",
+  "scripts": {
+    "dev:api": "pnpm --filter @gym/api dev",
+    "dev:web": "pnpm --filter @gym/web dev",
+    "build:api": "pnpm --filter @gym/api build",
+    "build:web": "pnpm --filter @gym/web build",
+    "start:api": "pnpm --filter @gym/api start:prod",
+    "db:generate": "pnpm --filter @gym/api prisma:generate",
+    "db:migrate": "pnpm --filter @gym/api prisma:migrate",
+    "db:migrate:prod": "pnpm --filter @gym/api prisma:migrate:prod",
+    "db:seed": "pnpm --filter @gym/api prisma:seed"
+  },
+  "engines": { "node": ">=20.0.0", "pnpm": ">=8.0.0" }
+}

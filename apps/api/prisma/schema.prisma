@@ -1,0 +1,491 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Branch {
+  id                   String   @id @default(uuid())
+  name                 String
+  code                 String   @unique
+  address              String
+  city                 String
+  state                String
+  zipCode              String
+  country              String   @default("IN")
+  phone                String
+  email                String
+  latitude             Float
+  longitude            Float
+  geoFenceRadiusMeters Int      @default(50)
+  openingTime          String   @default("06:00")
+  closingTime          String   @default("22:00")
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  users              User[]
+  memberProfiles     MemberProfile[]
+  packages           MembershipPackage[]
+  subscriptions      MemberSubscription[]
+  attendanceRecords  Attendance[]
+  payments           Payment[]
+  chatMessages       ChatMessage[]
+  retentionAlerts    RetentionAlert[]
+  trainerAssignments TrainerAssignment[]
+
+  @@index([city, isActive])
+  @@map("branches")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  phone             String    @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  role              UserRole
+  branchId          String?
+  isActive          Boolean   @default(true)
+  mustResetPassword Boolean   @default(true)
+  avatarUrl         String?
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  branch               Branch?           @relation(fields: [branchId], references: [id])
+  memberProfile        MemberProfile?
+  trainerProfile       TrainerProfile?
+  refreshTokens        RefreshToken[]
+  otpCodes             OtpCode[]
+  sentMessages         ChatMessage[]     @relation("SentMessages")
+  receivedMessages     ChatMessage[]     @relation("ReceivedMessages")
+  recordedMeasurements BodyMeasurement[] @relation("RecordedBy")
+  approvedPayments     Payment[]         @relation("ApprovedBy")
+  resolvedAlerts       RetentionAlert[]  @relation("ResolvedBy")
+  createdWorkoutPlans  WorkoutPlan[]     @relation("TrainerWorkouts")
+  createdDietPlans     DietPlan[]        @relation("TrainerDiets")
+  approvedDietPlans    DietPlan[]        @relation("ApprovedDiets")
+  verifiedAttendance   Attendance[]      @relation("VerifiedBy")
+
+  @@index([email])
+  @@index([phone])
+  @@index([role, branchId])
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  BRANCH_MANAGER
+  PERSONAL_TRAINER
+  FLOOR_TRAINER
+  MEMBER
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model OtpCode {
+  id        String     @id @default(uuid())
+  userId    String
+  code      String
+  purpose   OtpPurpose
+  expiresAt DateTime
+  isUsed    Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, purpose])
+  @@map("otp_codes")
+}
+
+enum OtpPurpose {
+  CHECK_IN
+  PASSWORD_RESET
+  PHONE_VERIFY
+}
+
+model MemberProfile {
+  id                    String      @id @default(uuid())
+  userId                String      @unique
+  branchId              String
+  memberId              String      @unique
+  dateOfBirth           DateTime?
+  gender                Gender?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  medicalNotes          String?
+  joinDate              DateTime    @default(now())
+  trainerTier           TrainerTier @default(FLOOR)
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch             Branch              @relation(fields: [branchId], references: [id])
+  subscriptions      MemberSubscription[]
+  attendanceRecords  Attendance[]
+  payments           Payment[]
+  workoutPlans       WorkoutPlan[]
+  dietPlans          DietPlan[]
+  measurements       BodyMeasurement[]
+  retentionAlerts    RetentionAlert[]
+  trainerAssignments TrainerAssignment[] @relation("MemberAssignments")
+
+  @@index([branchId])
+  @@index([memberId])
+  @@map("member_profiles")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum TrainerTier {
+  PERSONAL
+  FLOOR
+}
+
+model TrainerProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  specializations String[]
+  certifications  String[]
+  bio             String?
+  maxClients      Int      @default(15)
+  currentClients  Int      @default(0)
+  isAvailable     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainerAssignments TrainerAssignment[] @relation("TrainerAssignments")
+  @@map("trainer_profiles")
+}
+
+model TrainerAssignment {
+  id        String      @id @default(uuid())
+  memberId  String
+  trainerId String
+  branchId  String
+  tier      TrainerTier
+  startDate DateTime    @default(now())
+  endDate   DateTime?
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+
+  member  MemberProfile  @relation("MemberAssignments", fields: [memberId], references: [id])
+  trainer TrainerProfile @relation("TrainerAssignments", fields: [trainerId], references: [id])
+  branch  Branch         @relation(fields: [branchId], references: [id])
+
+  @@unique([memberId, trainerId, isActive])
+  @@map("trainer_assignments")
+}
+
+model MembershipPackage {
+  id                      String   @id @default(uuid())
+  branchId                String
+  name                    String
+  description             String
+  durationDays            Int
+  price                   Decimal  @db.Decimal(10, 2)
+  currency                String   @default("INR")
+  includesPersonalTrainer Boolean  @default(false)
+  ptSessionsPerWeek       Int?
+  maxFreezeDays           Int      @default(0)
+  isActive                Boolean  @default(true)
+  sortOrder               Int      @default(0)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  branch        Branch               @relation(fields: [branchId], references: [id])
+  subscriptions MemberSubscription[]
+  @@index([branchId, isActive])
+  @@map("membership_packages")
+}
+
+model MemberSubscription {
+  id              String             @id @default(uuid())
+  memberId        String
+  packageId       String
+  branchId        String
+  startDate       DateTime
+  endDate         DateTime
+  status          SubscriptionStatus @default(ACTIVE)
+  freezeStartDate DateTime?
+  freezeEndDate   DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  member   MemberProfile     @relation(fields: [memberId], references: [id])
+  package  MembershipPackage @relation(fields: [packageId], references: [id])
+  branch   Branch            @relation(fields: [branchId], references: [id])
+  payments Payment[]
+
+  @@index([memberId, status])
+  @@index([branchId, status])
+  @@map("member_subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  FROZEN
+  CANCELLED
+}
+
+model Payment {
+  id                   String        @id @default(uuid())
+  memberId             String
+  subscriptionId       String?
+  branchId             String
+  amount               Decimal       @db.Decimal(10, 2)
+  currency             String        @default("INR")
+  method               PaymentMethod
+  status               PaymentStatus @default(PENDING)
+  gatewayTransactionId String?
+  gatewayResponse      Json?
+  invoiceNumber        String        @unique
+  description          String?
+  approvedById         String?
+  paidAt               DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  member       MemberProfile       @relation(fields: [memberId], references: [id])
+  subscription MemberSubscription? @relation(fields: [subscriptionId], references: [id])
+  branch       Branch              @relation(fields: [branchId], references: [id])
+  approvedBy   User?               @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  @@index([memberId, status])
+  @@index([branchId, createdAt])
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  UPI
+  GOOGLE_PAY
+  CARD
+  CASH
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Attendance {
+  id           String        @id @default(uuid())
+  memberId     String
+  branchId     String
+  checkInTime  DateTime      @default(now())
+  checkOutTime DateTime?
+  method       CheckInMethod
+  verifiedById String?
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime      @default(now())
+
+  member     MemberProfile @relation(fields: [memberId], references: [id])
+  branch     Branch        @relation(fields: [branchId], references: [id])
+  verifiedBy User?         @relation("VerifiedBy", fields: [verifiedById], references: [id])
+
+  @@index([memberId, checkInTime])
+  @@index([branchId, checkInTime])
+  @@map("attendance_records")
+}
+
+enum CheckInMethod {
+  FRONT_DESK_LOOKUP
+  GEO_FENCE
+  OTP_VERIFICATION
+}
+
+model WorkoutPlan {
+  id          String    @id @default(uuid())
+  memberId    String
+  trainerId   String
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  member    MemberProfile    @relation(fields: [memberId], references: [id])
+  trainer   User             @relation("TrainerWorkouts", fields: [trainerId], references: [id])
+  exercises WorkoutExercise[]
+  @@index([memberId, isActive])
+  @@map("workout_plans")
+}
+
+model WorkoutExercise {
+  id                  String   @id @default(uuid())
+  planId              String
+  dayOfWeek           Int
+  exerciseName        String
+  muscleGroup         String
+  sets                Int
+  reps                String
+  restSeconds         Int      @default(60)
+  orderIndex          Int
+  alternativeExercise String?
+
+  plan WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  @@index([planId, dayOfWeek])
+  @@map("workout_exercises")
+}
+
+model DietPlan {
+  id             String   @id @default(uuid())
+  memberId       String
+  trainerId      String
+  name           String
+  targetCalories Int
+  proteinGrams   Int
+  carbsGrams     Int
+  fatGrams       Int
+  startDate      DateTime
+  endDate        DateTime?
+  isApproved     Boolean  @default(false)
+  approvedById   String?
+  approvedAt     DateTime?
+  isAiGenerated  Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  member     MemberProfile @relation(fields: [memberId], references: [id])
+  trainer    User          @relation("TrainerDiets", fields: [trainerId], references: [id])
+  approvedBy User?         @relation("ApprovedDiets", fields: [approvedById], references: [id])
+  meals      DietMeal[]
+  @@index([memberId, isActive])
+  @@map("diet_plans")
+}
+
+model DietMeal {
+  id          String   @id @default(uuid())
+  planId      String
+  dayOfWeek   Int
+  mealType    String
+  name        String
+  description String?
+  ingredients String[]
+  calories    Int
+  proteinG    Int
+  carbsG      Int
+  fatG        Int
+  orderIndex  Int
+
+  plan DietPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  @@index([planId, dayOfWeek])
+  @@map("diet_meals")
+}
+
+model BodyMeasurement {
+  id                String   @id @default(uuid())
+  memberId          String
+  recordedById      String
+  date              DateTime @default(now())
+  weightKg          Decimal? @db.Decimal(5, 2)
+  heightCm          Decimal? @db.Decimal(5, 1)
+  bmi               Decimal? @db.Decimal(4, 1)
+  bodyFatPercentage Decimal? @db.Decimal(4, 1)
+  muscleMassKg      Decimal? @db.Decimal(5, 2)
+  chestCm           Decimal? @db.Decimal(5, 1)
+  waistCm           Decimal? @db.Decimal(5, 1)
+  hipsCm            Decimal? @db.Decimal(5, 1)
+  bicepsCm          Decimal? @db.Decimal(5, 1)
+  thighsCm          Decimal? @db.Decimal(5, 1)
+  notes             String?
+  createdAt         DateTime @default(now())
+
+  member     MemberProfile @relation(fields: [memberId], references: [id])
+  recordedBy User          @relation("RecordedBy", fields: [recordedById], references: [id])
+  @@index([memberId, date])
+  @@map("body_measurements")
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  branchId    String
+  content     String
+  messageType String   @default("TEXT")
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User   @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  branch   Branch @relation(fields: [branchId], references: [id])
+  @@index([senderId, receiverId, createdAt])
+  @@index([receiverId, isRead])
+  @@map("chat_messages")
+}
+
+model RetentionAlert {
+  id           String   @id @default(uuid())
+  memberId     String
+  branchId     String
+  alertType    String
+  severity     String
+  message      String
+  metadata     Json?
+  isResolved   Boolean  @default(false)
+  resolvedById String?
+  resolvedAt   DateTime?
+  createdAt    DateTime @default(now())
+
+  member     MemberProfile @relation(fields: [memberId], references: [id])
+  branch     Branch        @relation(fields: [branchId], references: [id])
+  resolvedBy User?         @relation("ResolvedBy", fields: [resolvedById], references: [id])
+  @@index([branchId, isResolved])
+  @@map("retention_alerts")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  branchId   String?
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  body        String
+  type        String
+  channel     String
+  isSent      Boolean  @default(false)
+  sentAt      DateTime?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  @@index([userId, isRead])
+  @@map("notifications")
+}
