@@ -8,11 +8,21 @@ router.use(authenticate);
 
 function getPrisma(req: Request): PrismaClient { return req.app.locals.prisma; }
 
-// GET /api/v1/members - List members for branch
-router.get('/', requireRole('BRANCH_MANAGER'), async (req: Request, res: Response) => {
+async function getBranchId(prisma: PrismaClient, user: any): Promise<string | null> {
+  if (user.branchId) return user.branchId;
+  // Super Admin - use first branch
+  const branch = await prisma.branch.findFirst({ where: { isActive: true } });
+  return branch ? branch.id : null;
+}
+
+// GET /api/v1/members
+router.get('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
+  const branchId = await getBranchId(prisma, req.user!);
+  if (!branchId) return res.json([]);
+
   const members = await prisma.memberProfile.findMany({
-    where: { branchId: req.user!.branchId! },
+    where: { branchId },
     include: { user: { select: { id: true, email: true, phone: true, firstName: true, lastName: true, isActive: true, lastLoginAt: true } }, subscriptions: { where: { status: 'ACTIVE' }, include: { package: { select: { name: true } } }, take: 1 } },
     orderBy: { joinDate: 'desc' },
   });
@@ -20,20 +30,24 @@ router.get('/', requireRole('BRANCH_MANAGER'), async (req: Request, res: Respons
 });
 
 // GET /api/v1/members/search?q=
-router.get('/search', requireRole('BRANCH_MANAGER'), async (req: Request, res: Response) => {
+router.get('/search', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
   const q = (req.query.q as string) || '';
   if (!q) return res.json([]);
+
+  const branchId = await getBranchId(prisma, req.user!);
+  const where: any = {
+    OR: [
+      { memberId: { contains: q, mode: 'insensitive' } },
+      { user: { phone: { contains: q } } },
+      { user: { firstName: { contains: q, mode: 'insensitive' } } },
+      { user: { lastName: { contains: q, mode: 'insensitive' } } },
+    ],
+  };
+  if (branchId) where.branchId = branchId;
+
   const members = await prisma.memberProfile.findMany({
-    where: {
-      branchId: req.user!.branchId!,
-      OR: [
-        { memberId: { contains: q, mode: 'insensitive' } },
-        { user: { phone: { contains: q } } },
-        { user: { firstName: { contains: q, mode: 'insensitive' } } },
-        { user: { lastName: { contains: q, mode: 'insensitive' } } },
-      ],
-    },
+    where,
     include: { user: { select: { firstName: true, lastName: true, phone: true, email: true } } },
     take: 10,
   });
@@ -41,48 +55,62 @@ router.get('/search', requireRole('BRANCH_MANAGER'), async (req: Request, res: R
 });
 
 // POST /api/v1/members - Create new member
-router.post('/', requireRole('BRANCH_MANAGER'), async (req: Request, res: Response) => {
+router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
   const { email, phone, firstName, lastName, dateOfBirth, gender, packageId, trainerTier } = req.body;
 
   if (!email || !phone || !firstName || !lastName || !packageId) {
-    return res.status(400).json({ message: 'Missing required fields' });
+    return res.status(400).json({ message: 'Missing required fields: email, phone, firstName, lastName, packageId' });
   }
 
-  const exists = await prisma.user.findFirst({ where: { OR: [{ email }, { phone }] } });
-  if (exists) return res.status(409).json({ message: 'User with this email or phone already exists' });
+  try {
+    const exists = await prisma.user.findFirst({ where: { OR: [{ email }, { phone }] } });
+    if (exists) return res.status(409).json({ message: 'User with this email or phone already exists' });
 
-  // Generate temp password
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
-  let tempPass = '';
-  for (let i = 0; i < 10; i++) tempPass += chars[Math.floor(Math.random() * chars.length)];
-  const hash = await bcrypt.hash(tempPass, 12);
+    // Get branch
+    const branchId = await getBranchId(prisma, req.user!);
+    if (!branchId) return res.status(400).json({ message: 'No branch available. Create a branch first.' });
 
-  // Generate member ID
-  const branch = await prisma.branch.findUnique({ where: { id: req.user!.branchId! }, select: { code: true } });
-  const count = await prisma.memberProfile.count({ where: { branchId: req.user!.branchId! } });
-  const memberId = `GYM-${branch!.code}-${String(count + 1).padStart(4, '0')}`;
+    // Generate temp password
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
+    let tempPass = '';
+    for (let i = 0; i < 10; i++) tempPass += chars[Math.floor(Math.random() * chars.length)];
+    const hash = await bcrypt.hash(tempPass, 12);
 
-  // Get package
-  const pkg = await prisma.membershipPackage.findUnique({ where: { id: packageId } });
-  if (!pkg) return res.status(400).json({ message: 'Invalid package' });
+    // Generate member ID
+    const branch = await prisma.branch.findUnique({ where: { id: branchId }, select: { code: true } });
+    const count = await prisma.memberProfile.count({ where: { branchId } });
+    const memberId = `GYM-${branch!.code}-${String(count + 1).padStart(4, '0')}`;
 
-  const user = await prisma.user.create({
-    data: { email, phone, passwordHash: hash, firstName, lastName, role: 'MEMBER', branchId: req.user!.branchId!, mustResetPassword: true },
-  });
+    // Get package
+    const pkg = await prisma.membershipPackage.findUnique({ where: { id: packageId } });
+    if (!pkg) return res.status(400).json({ message: 'Invalid package selected' });
 
-  const profile = await prisma.memberProfile.create({
-    data: { userId: user.id, branchId: req.user!.branchId!, memberId, dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null, gender, trainerTier: trainerTier || 'FLOOR' },
-  });
+    const user = await prisma.user.create({
+      data: { email, phone, passwordHash: hash, firstName, lastName, role: 'MEMBER', branchId, mustResetPassword: true },
+    });
 
-  // Create subscription
-  const startDate = new Date();
-  const endDate = new Date(); endDate.setDate(endDate.getDate() + pkg.durationDays);
-  await prisma.memberSubscription.create({
-    data: { memberId: profile.id, packageId, branchId: req.user!.branchId!, startDate, endDate, status: 'ACTIVE' },
-  });
+    const profile = await prisma.memberProfile.create({
+      data: { userId: user.id, branchId, memberId, dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null, gender: gender || null, trainerTier: trainerTier || 'FLOOR' },
+    });
 
-  res.status(201).json({ memberId, user: { id: user.id, email, firstName, lastName }, credentials: { email, temporaryPassword: tempPass, mustResetPassword: true } });
+    // Create subscription
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + pkg.durationDays);
+    await prisma.memberSubscription.create({
+      data: { memberId: profile.id, packageId, branchId, startDate, endDate, status: 'ACTIVE' },
+    });
+
+    res.status(201).json({
+      memberId,
+      user: { id: user.id, email, firstName, lastName },
+      credentials: { email, temporaryPassword: tempPass, mustResetPassword: true },
+    });
+  } catch (err: any) {
+    console.error('Create member error:', err);
+    res.status(500).json({ message: err.message || 'Failed to create member' });
+  }
 });
 
 // GET /api/v1/members/:id
