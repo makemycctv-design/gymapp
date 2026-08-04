@@ -67,7 +67,6 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt,
   const adminNav = [
     { icon: '🏠', label: 'Dashboard', p: 'home' },
     { icon: '👥', label: 'Members', p: 'members' },
-    { icon: '➕', label: 'Add Member', p: 'create-member' },
     { icon: '🏋️', label: 'Trainers', p: 'trainers' },
     { icon: '📦', label: 'Packages', p: 'packages' },
     { icon: '✅', label: 'Attendance', p: 'attendance' },
@@ -75,6 +74,18 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt,
     { icon: '⚠️', label: 'Alerts', p: 'alerts' },
     { icon: '📊', label: 'Analytics', p: 'analytics' },
     { icon: '🏢', label: 'Branches', p: 'branches' },
+  ];
+
+  const managerNav = [
+    { icon: '🏠', label: 'Dashboard', p: 'home' },
+    { icon: '👥', label: 'Members', p: 'members' },
+    { icon: '➕', label: 'Add Member', p: 'create-member' },
+    { icon: '🏋️', label: 'Trainers', p: 'trainers' },
+    { icon: '📦', label: 'Packages', p: 'packages' },
+    { icon: '✅', label: 'Attendance', p: 'attendance' },
+    { icon: '💳', label: 'Payments', p: 'payments' },
+    { icon: '⚠️', label: 'Alerts', p: 'alerts' },
+    { icon: '📊', label: 'Analytics', p: 'analytics' },
   ];
 
   const memberNav = [
@@ -93,7 +104,7 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt,
     { icon: '📏', label: 'Measurements', p: 'progress' },
   ];
 
-  const navItems = user.role === 'MEMBER' ? memberNav : (user.role === 'PERSONAL_TRAINER' || user.role === 'FLOOR_TRAINER') ? trainerNav : adminNav;
+  const navItems = user.role === 'MEMBER' ? memberNav : (user.role === 'PERSONAL_TRAINER' || user.role === 'FLOOR_TRAINER') ? trainerNav : user.role === 'BRANCH_MANAGER' ? managerNav : adminNav;
 
   return (
     <div className={`min-h-screen transition-colors ${dark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
