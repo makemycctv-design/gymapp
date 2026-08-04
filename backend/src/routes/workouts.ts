@@ -1,0 +1,37 @@
+import { Router, Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { authenticate } from '../middleware/auth';
+
+const router = Router();
+router.use(authenticate);
+
+function getPrisma(req: Request): PrismaClient { return req.app.locals.prisma; }
+
+// GET /api/v1/workouts/my - Get member's active workout
+router.get('/my', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const member = await prisma.memberProfile.findFirst({ where: { userId: req.user!.id } });
+  if (!member) return res.status(404).json({ message: 'Member profile not found' });
+
+  const plan = await prisma.workoutPlan.findFirst({
+    where: { memberId: member.id, isActive: true },
+    include: { exercises: { orderBy: [{ dayOfWeek: 'asc' }, { orderIndex: 'asc' }] }, trainer: { select: { firstName: true, lastName: true } } },
+  });
+  res.json(plan);
+});
+
+// POST /api/v1/workouts - Create workout plan
+router.post('/', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const { memberId, name, description, exercises } = req.body;
+  const plan = await prisma.workoutPlan.create({
+    data: {
+      memberId, trainerId: req.user!.id, name, description, isActive: true,
+      exercises: { create: exercises || [] },
+    },
+    include: { exercises: true },
+  });
+  res.status(201).json(plan);
+});
+
+export default router;

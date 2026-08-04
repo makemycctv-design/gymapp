@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; font-family: 'Inter', system-ui, sans-serif; }

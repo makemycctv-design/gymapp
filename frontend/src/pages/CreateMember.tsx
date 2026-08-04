@@ -1,0 +1,243 @@
+import { useState, useEffect } from 'react';
+import { apiFetch, apiPost } from '../lib/api';
+
+interface Props {
+  user: any;
+  dark: boolean;
+  setPage: (page: string) => void;
+}
+
+export default function CreateMember({ user, dark, setPage }: Props) {
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    packageId: '',
+    trainerTier: 'FLOOR',
+  });
+  const [packages, setPackages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [credentials, setCredentials] = useState<any>(null);
+
+  useEffect(() => {
+    apiFetch('/packages')
+      .then((data) => setPackages(Array.isArray(data) ? data : data.packages || []))
+      .catch(() => {});
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setCredentials(null);
+    try {
+      const data = await apiPost('/members', form);
+      setCredentials(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create member');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputClass = dark
+    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+    : 'bg-white border-gray-300 text-gray-900';
+
+  const cardClass = dark
+    ? 'bg-gray-800 border-gray-700 text-white'
+    : 'bg-white border-gray-200';
+
+  if (credentials) {
+    return (
+      <div className="p-6 max-w-lg mx-auto">
+        <div className={`p-6 border rounded-lg ${cardClass}`}>
+          <h2 className="text-xl font-bold mb-4 text-green-500">Member Created Successfully!</h2>
+          <div className={`space-y-2 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            {credentials.memberId && <p><strong>Member ID:</strong> {credentials.memberId}</p>}
+            {credentials.username && <p><strong>Username:</strong> {credentials.username}</p>}
+            {credentials.password && <p><strong>Password:</strong> <span className="font-mono bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">{credentials.password}</span></p>}
+            {credentials.loginId && <p><strong>Login ID:</strong> {credentials.loginId}</p>}
+          </div>
+          <p className={`mt-4 text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
+            Please save these credentials. The password cannot be retrieved later.
+          </p>
+          <button
+            onClick={() => setPage('members')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Back to Members
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 max-w-lg mx-auto">
+      <h1 className={`text-2xl font-bold mb-6 ${dark ? 'text-white' : 'text-gray-900'}`}>
+        Create New Member
+      </h1>
+
+      {error && (
+        <div className="p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg mb-4">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className={`p-6 border rounded-lg space-y-4 ${cardClass}`}>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+              First Name *
+            </label>
+            <input
+              type="text"
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
+              required
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+            />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+              Last Name *
+            </label>
+            <input
+              type="text"
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              required
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Email *
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+          />
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Phone *
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            required
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+          />
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Date of Birth *
+          </label>
+          <input
+            type="date"
+            name="dateOfBirth"
+            value={form.dateOfBirth}
+            onChange={handleChange}
+            required
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+          />
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Gender *
+          </label>
+          <select
+            name="gender"
+            value={form.gender}
+            onChange={handleChange}
+            required
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+          >
+            <option value="">Select Gender</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Package *
+          </label>
+          <select
+            name="packageId"
+            value={form.packageId}
+            onChange={handleChange}
+            required
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+          >
+            <option value="">Select Package</option>
+            {packages.map((pkg: any) => (
+              <option key={pkg.id || pkg._id} value={pkg.id || pkg._id}>
+                {pkg.name} - {'\u20B9'}{pkg.price}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Trainer Tier *
+          </label>
+          <select
+            name="trainerTier"
+            value={form.trainerTier}
+            onChange={handleChange}
+            required
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+          >
+            <option value="FLOOR">Floor Trainer</option>
+            <option value="PERSONAL">Personal Trainer</option>
+          </select>
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {loading ? 'Creating...' : 'Create Member'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage('members')}
+            className={`px-4 py-2 border rounded-lg transition ${
+              dark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
