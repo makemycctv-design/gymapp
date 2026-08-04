@@ -1,4 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body { @apply min-h-screen bg-gym-dark; }
+
+html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+body { @apply min-h-screen antialiased; }
