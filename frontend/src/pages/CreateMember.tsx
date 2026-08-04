@@ -61,15 +61,16 @@ export default function CreateMember({ user, dark, setPage }: Props) {
       <div className="p-6 max-w-lg mx-auto">
         <div className={`p-6 border rounded-lg ${cardClass}`}>
           <h2 className="text-xl font-bold mb-4 text-green-500">Member Created Successfully!</h2>
-          <div className={`space-y-2 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
-            {credentials.memberId && <p><strong>Member ID:</strong> {credentials.memberId}</p>}
-            {credentials.username && <p><strong>Username:</strong> {credentials.username}</p>}
-            {credentials.password && <p><strong>Password:</strong> <span className="font-mono bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">{credentials.password}</span></p>}
-            {credentials.loginId && <p><strong>Login ID:</strong> {credentials.loginId}</p>}
+          <div className={`space-y-3 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            {credentials.memberId && <p><strong>Member ID:</strong> <code className="bg-gray-100 text-gray-800 px-2 py-0.5 rounded font-mono">{credentials.memberId}</code></p>}
+            {credentials.credentials?.email && <p><strong>Login Email:</strong> <code className="bg-gray-100 text-gray-800 px-2 py-0.5 rounded font-mono">{credentials.credentials.email}</code></p>}
+            {credentials.credentials?.temporaryPassword && <p><strong>Temporary Password:</strong> <code className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-mono text-lg font-bold">{credentials.credentials.temporaryPassword}</code></p>}
+            {credentials.user?.email && !credentials.credentials?.email && <p><strong>Login Email:</strong> <code className="bg-gray-100 text-gray-800 px-2 py-0.5 rounded font-mono">{credentials.user.email}</code></p>}
           </div>
-          <p className={`mt-4 text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
-            Please save these credentials. The password cannot be retrieved later.
-          </p>
+          <div className={`mt-4 p-3 rounded-lg ${dark ? 'bg-yellow-900/20 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'}`}>
+            <p className={`text-sm font-medium ${dark ? 'text-yellow-400' : 'text-yellow-700'}`}>⚠️ Save these credentials now!</p>
+            <p className={`text-xs mt-1 ${dark ? 'text-yellow-500' : 'text-yellow-600'}`}>Share the email and password with the member. They must change password on first login.</p>
+          </div>
           <button
             onClick={() => setPage('members')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
