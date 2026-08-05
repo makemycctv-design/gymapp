@@ -19,7 +19,7 @@ model Branch {
   email                String
   latitude             Float
   longitude            Float
-  geoFenceRadiusMeters Int      @default(50)
+  geoFenceRadiusMeters Int      @default(500)
   isActive             Boolean  @default(true)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
