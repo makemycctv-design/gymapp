@@ -130,3 +130,16 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+
+// POST /api/v1/members/delete/:userId - Deactivate a member
+router.post('/delete/:userId', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const { userId } = req.params;
+  try {
+    await prisma.user.update({ where: { id: userId }, data: { isActive: false } });
+    res.json({ message: 'Member deleted successfully' });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message || 'Failed to delete member' });
+  }
+});
