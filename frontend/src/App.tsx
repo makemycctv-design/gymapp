@@ -16,6 +16,7 @@ import CreateMemberPage from './pages/CreateMember';
 import CreateStaffPage from './pages/CreateStaff';
 import MyClientsPage from './pages/MyClients';
 import MyPackagePage from './pages/MyPackage';
+import PaymentsPage from './pages/Payments';
 
 export type Page = 'home' | 'members' | 'my-clients' | 'my-package' | 'create-member' | 'create-staff' | 'trainers' | 'packages' | 'attendance' | 'payments' | 'alerts' | 'analytics' | 'branches' | 'checkin' | 'workout' | 'diet' | 'progress';
 
@@ -61,7 +62,7 @@ export default function App() {
       {page === 'workout' && <WorkoutPage {...props} />}
       {page === 'diet' && <DietPage {...props} />}
       {page === 'progress' && <ProgressPage {...props} />}
-      {page === 'payments' && <PlaceholderPage title="Payments" desc="UPI, Google Pay, and card payments. Cash approved by manager." dark={dark} />}
+      {page === 'payments' && <PaymentsPage {...props} />}
       {page === 'alerts' && <PlaceholderPage title="Retention Alerts" desc="AI detects 60%+ attendance drops and alerts managers automatically." dark={dark} />}
     </Layout>
   );
