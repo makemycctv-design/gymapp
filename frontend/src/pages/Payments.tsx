@@ -6,6 +6,9 @@ interface Props { user: any; dark: boolean; setPage: (page: string) => void; }
 export default function Payments({ user, dark, setPage }: Props) {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPayment, setShowPayment] = useState<'gpay' | 'cash' | null>(null);
+  const [selectedSub, setSelectedSub] = useState<any>(null);
+  const [cashStatus, setCashStatus] = useState('');
   const cardClass = dark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200';
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export default function Payments({ user, dark, setPage }: Props) {
                   <th className="text-left py-3 px-4">Renewal</th>
                   <th className="text-left py-3 px-4">Status</th>
                   <th className="text-left py-3 px-4">Days Left</th>
+                  <th className="text-left py-3 px-4">Payment</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,6 +67,12 @@ export default function Payments({ user, dark, setPage }: Props) {
                         <span className={`font-medium ${isExpired ? 'text-red-500' : isExpiring ? 'text-yellow-500' : 'text-green-500'}`}>
                           {isExpired ? 'Expired' : `${days} days`}
                         </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-1">
+                          <button onClick={() => { setSelectedSub(sub); setShowPayment('gpay'); }} className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">GPay</button>
+                          <button onClick={() => { setSelectedSub(sub); setShowPayment('cash'); }} className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">Cash</button>
+                        </div>
                       </td>
                     </tr>
                   );
