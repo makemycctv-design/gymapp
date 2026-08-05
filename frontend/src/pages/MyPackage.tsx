@@ -104,7 +104,8 @@ export default function MyPackage({ user, dark, setPage }: Props) {
             <p className="text-2xl font-bold text-green-500 mb-2">₹{Number(subscription?.package?.price || 0).toLocaleString()}</p>
             <p className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>UPI ID: fitness@upi</p>
             <p className={`text-xs mt-1 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>After payment, share screenshot with branch manager for confirmation</p>
-            <button onClick={() => setShowPayment(false)} className="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg w-full">Close</button>
+            <button onClick={async () => { try { await fetch('/api/v1/payments/record-online', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('token') }, body: JSON.stringify({ subscriptionId: subscription?.id, amount: Number(subscription?.package?.price || 0), method: 'GOOGLE_PAY' }) }); alert('✅ Payment recorded! Your branch manager will be notified.'); setShowPayment(false); } catch { alert('Payment recording failed. Share screenshot with manager.'); } }} className="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg w-full hover:bg-green-600">I've Paid - Confirm Payment</button>
+            <button onClick={() => setShowPayment(false)} className="mt-2 px-4 py-2 bg-gray-500 text-white rounded-lg w-full">Close</button>
           </div>
         </div>
       )}

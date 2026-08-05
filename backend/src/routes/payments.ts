@@ -56,3 +56,31 @@ router.post('/record-cash', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async 
 
   res.status(201).json({ message: 'Payment recorded', payment });
 });
+
+
+// POST /api/v1/payments/record-online - Member records their online payment (GPay/UPI)
+router.post('/record-online', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const { subscriptionId, amount, method, transactionId } = req.body;
+
+  const member = await prisma.memberProfile.findFirst({ where: { userId: req.user!.id } });
+  if (!member) return res.status(404).json({ message: 'Member profile not found' });
+
+  const invoiceNumber = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+  const payment = await prisma.payment.create({
+    data: {
+      memberId: member.id,
+      subscriptionId: subscriptionId || null,
+      branchId: member.branchId,
+      amount: Number(amount),
+      currency: 'INR',
+      method: method || 'UPI',
+      status: 'COMPLETED',
+      invoiceNumber,
+      paidAt: new Date(),
+    },
+  });
+
+  res.status(201).json({ message: 'Payment recorded successfully', payment });
+});
