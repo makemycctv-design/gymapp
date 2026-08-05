@@ -115,6 +115,7 @@ export default function Members({ user, dark, setPage }: Props) {
               <div className="flex gap-2 mt-3">
                 <button onClick={() => setViewMember(member)} className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">View</button>
                 <button onClick={() => { setEditMember(member); setEditForm({ firstName: member.user?.firstName || '', lastName: member.user?.lastName || '', phone: member.user?.phone || '', email: member.user?.email || '' }); }} className={`px-3 py-1 text-xs rounded border ${dark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}>Edit</button>
+                <button onClick={async () => { if (!confirm(`Delete ${member.user?.firstName || 'this member'}?`)) return; try { await fetch('/api/v1/staff/deactivate/' + (member.user?.id || member.userId), { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); fetchMembers(); } catch {} }} className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
               </div>
             </div>
           ))}
