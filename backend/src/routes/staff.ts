@@ -62,3 +62,26 @@ router.post('/deactivate/:userId', async (req: Request, res: Response) => {
   await prisma.user.update({ where: { id: userId }, data: { isActive: false } });
   res.json({ message: 'Staff deactivated' });
 });
+
+
+
+// POST /api/v1/staff/reset-password/:userId - Reset password for any staff/member
+router.post('/reset-password/:userId', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const { userId } = req.params;
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  // Generate new temp password
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
+  let tempPass = '';
+  for (let i = 0; i < 10; i++) tempPass += chars[Math.floor(Math.random() * chars.length)];
+
+  const bcrypt = require('bcrypt');
+  const hash = await bcrypt.hash(tempPass, 12);
+
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash: hash, mustResetPassword: true } });
+
+  res.json({ message: 'Password reset successfully', credentials: { email: user.email, temporaryPassword: tempPass } });
+});

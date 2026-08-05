@@ -206,6 +206,7 @@ export default function CreateStaff({ user, dark, setPage }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
+                  <button onClick={async () => { if (!confirm(`Reset password for ${s.firstName}?`)) return; try { const res = await fetch('/api/v1/staff/reset-password/' + s.id, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); const data = await res.json(); if (res.ok) { alert(`New Password: ${data.credentials?.temporaryPassword}\n\nEmail: ${data.credentials?.email}\n\nShare this with the staff member.`); } } catch {} }} className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600">Reset PW</button>
                   <button onClick={() => setEditStaff(s)} className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
                   <button onClick={() => deleteStaff(s.id, `${s.firstName} ${s.lastName}`)} className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
                 </div>
