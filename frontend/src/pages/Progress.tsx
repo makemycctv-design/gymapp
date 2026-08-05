@@ -86,21 +86,6 @@ export default function Progress({ user, dark, setPage }: Props) {
 
       {status && <p className={`mb-4 text-sm p-3 rounded-lg ${status.startsWith('✅') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{status}</p>}
 
-      {/* Progress Charts */}
-      {!loading && data.length >= 2 && (
-        <div className="mb-6">
-          <h2 className={`text-lg font-semibold mb-3 ${dark ? 'text-white' : 'text-gray-900'}`}>📈 Progress Charts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <MiniChart data={[...data].reverse()} dataKey="weightKg" label="Weight (kg)" color="#3B82F6" dark={dark} />
-            <MiniChart data={[...data].reverse()} dataKey="bodyFatPercentage" label="Body Fat %" color="#EF4444" dark={dark} />
-            <MiniChart data={[...data].reverse()} dataKey="muscleMassKg" label="Muscle Mass (kg)" color="#10B981" dark={dark} />
-            <MiniChart data={[...data].reverse()} dataKey="waistCm" label="Waist (cm)" color="#F59E0B" dark={dark} />
-            <MiniChart data={[...data].reverse()} dataKey="chestCm" label="Chest (cm)" color="#8B5CF6" dark={dark} />
-            <MiniChart data={[...data].reverse()} dataKey="bicepsCm" label="Biceps (cm)" color="#EC4899" dark={dark} />
-          </div>
-        </div>
-      )}
-
 
       {showCreate && (
         <div className={`mb-6 p-5 border rounded-xl ${cardClass}`}>
