@@ -132,8 +132,7 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt,
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setDark(!dark)} className={`p-2 rounded-lg ${dark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} title="Toggle theme">{dark ? '☀️' : '🌙'}</button>
-          {installPrompt && <button onClick={() => { installPrompt.prompt(); }} className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg font-medium">📲 Install</button>}
-          {!installPrompt && <button onClick={() => { if (/iPhone|iPad/.test(navigator.userAgent)) { alert('To install:\n1. Tap the Share button (box with arrow)\n2. Scroll down\n3. Tap "Add to Home Screen"'); } else if (/Android/.test(navigator.userAgent)) { alert('To install:\n1. Tap the ⋮ menu (3 dots) at top right\n2. Tap "Add to Home Screen" or "Install App"'); } else { alert('To install:\n1. Click the install icon in the address bar (⊕ or 📥)\n2. Or go to browser menu → "Install App"'); } }} className={`px-3 py-1.5 text-xs rounded-lg font-medium border ${dark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}>📲 Install App</button>}
+          <button onClick={() => { if (installPrompt) { installPrompt.prompt(); } else { window.open('https://fitness.nokkoo.in', '_blank'); } }} className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg font-medium">📲 Install App</button>
           <span className={`text-sm hidden md:inline ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{user.firstName}</span>
           <button onClick={logout} className={`text-sm px-3 py-1.5 rounded-lg border ${dark ? 'border-gray-600 text-gray-400 hover:text-red-400 hover:border-red-400' : 'border-gray-300 text-gray-600 hover:text-red-500'}`}>Logout</button>
         </div>
