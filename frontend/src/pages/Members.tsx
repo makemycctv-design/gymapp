@@ -50,12 +50,14 @@ export default function Members({ user, dark, setPage }: Props) {
         <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>
           Members
         </h1>
+        {user.role === 'BRANCH_MANAGER' && (
         <button
           onClick={() => setPage('create-member')}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
           + Add Member
         </button>
+        )}
       </div>
 
       <form onSubmit={handleSearch} className="mb-6 flex gap-2">
