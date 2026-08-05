@@ -14,6 +14,10 @@ export default function Trainers({ user, dark, setPage }: Props) {
   const [editTrainer, setEditTrainer] = useState<any>(null);
   const [editForm, setEditForm] = useState({ specializations: '', certifications: '', bio: '', maxClients: 15, isAvailable: true });
   const [deleting, setDeleting] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addForm, setAddForm] = useState({ firstName: '', lastName: '', email: '', phone: '', role: 'PERSONAL_TRAINER', specializations: '', certifications: '', bio: '', maxClients: 15 });
+  const [addLoading, setAddLoading] = useState(false);
+  const [addCredentials, setAddCredentials] = useState<any>(null);
 
   const fetchTrainers = () => {
     setLoading(true);
@@ -46,13 +50,74 @@ export default function Trainers({ user, dark, setPage }: Props) {
       <div className="flex items-center justify-between mb-6">
         <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>Trainers</h1>
         {user.role === 'BRANCH_MANAGER' ? (
-          <button onClick={() => setPage('create-staff')} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium text-sm">+ Add Trainer</button>
+          <button onClick={() => setShowAddForm(!showAddForm)} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium text-sm">{showAddForm ? 'Cancel' : '+ Add Trainer'}</button>
         ) : (
           <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Use "Create Staff" to add new trainers</p>
         )}
       </div>
 
       {error && <div className="p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg mb-4">{error}</div>}
+
+      {/* Add Credentials Success */}
+      {addCredentials && (
+        <div className={`mb-6 p-5 border rounded-xl border-green-500 ${dark ? 'bg-green-900/20' : 'bg-green-50'}`}>
+          <h3 className="font-bold text-green-500 mb-2">Trainer Created!</h3>
+          <p className={dark ? 'text-gray-300' : 'text-gray-700'}><strong>Email:</strong> {addCredentials.credentials?.email}</p>
+          <p className={dark ? 'text-gray-300' : 'text-gray-700'}><strong>Password:</strong> <code className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded font-bold">{addCredentials.credentials?.temporaryPassword}</code></p>
+          <div className="flex gap-2 mt-3">
+            <button onClick={() => { const msg = `Welcome to FitZone Gym! 🏋️\n\nYour Trainer Login:\n📧 Email: ${addCredentials.credentials?.email}\n🔑 Password: ${addCredentials.credentials?.temporaryPassword}\n\n🔗 Login: https://fitness.nokkoo.in\n\n⚠️ Change password on first login.`; window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank'); }} className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">📱 Share via WhatsApp</button>
+            <button onClick={() => setAddCredentials(null)} className={`px-3 py-1.5 text-sm rounded-lg border ${dark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Dismiss</button>
+          </div>
+        </div>
+      )}
+
+      {/* Inline Add Trainer Form */}
+      {showAddForm && (
+        <div className={`mb-6 p-5 border rounded-xl ${cardClass}`}>
+          <h3 className="font-bold mb-4">New Trainer</h3>
+          <form onSubmit={async (e) => { e.preventDefault(); setAddLoading(true); setError(''); try { const payload = { ...addForm, specializations: addForm.specializations.split(',').map(s=>s.trim()).filter(Boolean), certifications: addForm.certifications.split(',').map(s=>s.trim()).filter(Boolean) }; const res = await fetch('/api/v1/trainers', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify(payload) }); const data = await res.json(); if (!res.ok) throw new Error(data.message); setAddCredentials(data); setShowAddForm(false); setAddForm({ firstName: '', lastName: '', email: '', phone: '', role: 'PERSONAL_TRAINER', specializations: '', certifications: '', bio: '', maxClients: 15 }); fetchTrainers(); } catch (err: any) { setError(err.message); } setAddLoading(false); }} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>First Name *</label>
+              <input value={addForm.firstName} onChange={e => setAddForm({...addForm, firstName: e.target.value})} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            </div>
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Last Name *</label>
+              <input value={addForm.lastName} onChange={e => setAddForm({...addForm, lastName: e.target.value})} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            </div>
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Email *</label>
+              <input type="email" value={addForm.email} onChange={e => setAddForm({...addForm, email: e.target.value})} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            </div>
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Phone *</label>
+              <input value={addForm.phone} onChange={e => setAddForm({...addForm, phone: e.target.value})} required placeholder="+91..." className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            </div>
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Role</label>
+              <select value={addForm.role} onChange={e => setAddForm({...addForm, role: e.target.value})} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`}>
+                <option value="PERSONAL_TRAINER">Personal Trainer</option>
+                <option value="FLOOR_TRAINER">Floor Trainer</option>
+              </select>
+            </div>
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Max Clients</label>
+              <input type="number" value={addForm.maxClients} onChange={e => setAddForm({...addForm, maxClients: Number(e.target.value)})} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            </div>
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Specializations</label>
+              <input value={addForm.specializations} onChange={e => setAddForm({...addForm, specializations: e.target.value})} placeholder="strength, cardio, yoga" className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            </div>
+            <div>
+              <label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Certifications</label>
+              <input value={addForm.certifications} onChange={e => setAddForm({...addForm, certifications: e.target.value})} placeholder="ACE-CPT, NASM" className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            </div>
+            <div className="md:col-span-2 flex gap-3">
+              <button type="submit" disabled={addLoading} className="px-5 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium disabled:opacity-50">{addLoading ? 'Creating...' : 'Create Trainer'}</button>
+              <button type="button" onClick={() => setShowAddForm(false)} className={`px-5 py-2 rounded-lg border ${dark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {loading && <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div></div>}
 
