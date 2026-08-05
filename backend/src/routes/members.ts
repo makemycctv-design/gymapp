@@ -57,7 +57,7 @@ router.get('/search', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: 
 // POST /api/v1/members - Create new member
 router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
-  const { email, phone, firstName, lastName, dateOfBirth, gender, packageId, trainerTier, assignedTrainerId } = req.body;
+  const { email, phone, firstName, lastName, dateOfBirth, gender, packageId, trainerTier, assignedTrainerId, branchId: requestBranchId } = req.body;
 
   if (!email || !phone || !firstName || !lastName || !packageId) {
     return res.status(400).json({ message: 'Missing required fields: email, phone, firstName, lastName, packageId' });
@@ -68,7 +68,7 @@ router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Reque
     if (exists) return res.status(409).json({ message: 'User with this email or phone already exists' });
 
     // Get branch
-    const branchId = await getBranchId(prisma, req.user!);
+    const branchId = requestBranchId || await getBranchId(prisma, req.user!);
     if (!branchId) return res.status(400).json({ message: 'No branch available. Create a branch first.' });
 
     // Generate temp password
