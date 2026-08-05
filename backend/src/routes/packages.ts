@@ -11,14 +11,11 @@ function getPrisma(req: Request): PrismaClient { return req.app.locals.prisma; }
 router.get('/', async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
 
-  // Super Admin sees all packages, others see their branch only
-  const where = req.user!.branchId
-    ? { branchId: req.user!.branchId, isActive: true }
-    : { isActive: true };
-
+  // Show all active packages for all staff
   const packages = await prisma.membershipPackage.findMany({
-    where,
+    where: { isActive: true },
     orderBy: { sortOrder: 'asc' },
+    include: { branch: { select: { name: true, code: true } } },
   });
   res.json(packages);
 });
