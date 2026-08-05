@@ -71,12 +71,24 @@ export default function CreateMember({ user, dark, setPage }: Props) {
             <p className={`text-sm font-medium ${dark ? 'text-yellow-400' : 'text-yellow-700'}`}>⚠️ Save these credentials now!</p>
             <p className={`text-xs mt-1 ${dark ? 'text-yellow-500' : 'text-yellow-600'}`}>Share the email and password with the member. They must change password on first login.</p>
           </div>
-          <button
-            onClick={() => setPage('members')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Back to Members
-          </button>
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={() => {
+                const creds = credentials.credentials || {};
+                const msg = `Welcome to FitZone Gym! 🏋️\n\nYour login credentials:\n📧 Email: ${creds.email || ''}\n🔑 Password: ${creds.temporaryPassword || ''}\n🆔 Member ID: ${credentials.memberId || ''}\n\n🔗 Login at: https://fitness.nokkoo.in\n\n⚠️ Please change your password on first login.`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+            >
+              <span>📱</span> Share via WhatsApp
+            </button>
+            <button
+              onClick={() => setPage('members')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Back to Members
+            </button>
+          </div>
         </div>
       </div>
     );
