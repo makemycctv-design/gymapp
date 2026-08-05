@@ -15,6 +15,8 @@ export default function Members({ user, dark, setPage }: Props) {
   const [viewMember, setViewMember] = useState<any>(null);
   const [editMember, setEditMember] = useState<any>(null);
   const [editForm, setEditForm] = useState({ firstName: '', lastName: '', phone: '', email: '' });
+  const [branches, setBranches] = useState<any[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState('');
 
   const fetchMembers = async (query?: string) => {
     setLoading(true);
@@ -33,6 +35,7 @@ export default function Members({ user, dark, setPage }: Props) {
 
   useEffect(() => {
     fetchMembers();
+    if (user.role === 'SUPER_ADMIN') apiFetch('/branches').then(d => setBranches(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -61,6 +64,12 @@ export default function Members({ user, dark, setPage }: Props) {
       </div>
 
       <form onSubmit={handleSearch} className="mb-6 flex gap-2">
+        {user.role === 'SUPER_ADMIN' && branches.length > 0 && (
+          <select value={selectedBranch} onChange={e => setSelectedBranch(e.target.value)} className={`px-3 py-2 border rounded-lg ${dark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}>
+            <option value="">All Branches</option>
+            {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        )}
         <input
           type="text"
           value={search}
@@ -98,7 +107,7 @@ export default function Members({ user, dark, setPage }: Props) {
 
       {!loading && !error && members.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {members.map((member: any) => (
+          {members.filter((m: any) => !selectedBranch || m.branchId === selectedBranch).map((member: any) => (
             <div
               key={member.id || member._id}
               className={`p-4 border rounded-lg ${cardClass}`}
@@ -110,6 +119,7 @@ export default function Members({ user, dark, setPage }: Props) {
                 <p>ID: <span className="font-mono">{member.memberId || member.id}</span></p>
                 <p>Phone: {member.user?.phone || member.phone || 'N/A'}</p>
                 <p>Email: {member.user?.email || member.email || 'N/A'}</p>
+                {member.branch && <p className={`text-xs ${dark ? 'text-blue-400' : 'text-blue-600'}`}>🏢 {member.branch.name}</p>}
                 {member.subscriptions && member.subscriptions[0] && (
                   <p className="mt-1"><span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">{member.subscriptions[0].package?.name || 'Active'}</span></p>
                 )}
