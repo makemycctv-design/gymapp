@@ -35,7 +35,13 @@ export default function DashboardPage({ user, dark, setPage }: { user: any; dark
     { icon: '📈', label: 'Progress', p: 'progress' as Page },
   ];
 
-  const actions = user.role === 'MEMBER' ? memberActions : user.role === 'BRANCH_MANAGER' ? [{ icon: '➕', label: 'Add Member', p: 'create-member' as Page }, ...adminActions] : adminActions;
+  const trainerActions = [
+    { icon: '👥', label: 'My Clients', p: 'my-clients' as Page },
+    { icon: '📦', label: 'Packages', p: 'packages' as Page },
+    { icon: '✅', label: 'Attendance', p: 'attendance' as Page },
+  ];
+
+  const actions = user.role === 'MEMBER' ? memberActions : (user.role === 'PERSONAL_TRAINER' || user.role === 'FLOOR_TRAINER') ? trainerActions : user.role === 'BRANCH_MANAGER' ? [{ icon: '➕', label: 'Add Member', p: 'create-member' as Page }, ...adminActions] : adminActions;
 
   return (
     <div className="space-y-6">
