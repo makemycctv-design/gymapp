@@ -22,7 +22,7 @@ router.get('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Reques
   if (!branchId) return res.json([]);
 
   const members = await prisma.memberProfile.findMany({
-    where: { branchId },
+    where: { branchId, user: { isActive: true } },
     include: { user: { select: { id: true, email: true, phone: true, firstName: true, lastName: true, isActive: true, lastLoginAt: true } }, subscriptions: { where: { status: 'ACTIVE' }, include: { package: { select: { name: true } } }, take: 1 } },
     orderBy: { joinDate: 'desc' },
   });
