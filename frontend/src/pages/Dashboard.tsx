@@ -70,9 +70,66 @@ export default function DashboardPage({ user, dark, setPage }: { user: any; dark
           ))}
         </div>
       </div>
+
+      {/* Change Password */}
+      <ChangePasswordSection dark={dark} card={card} sub={sub} />
     </div>
   );
 }
+
+function ChangePasswordSection({ dark, card, sub }: { dark: boolean; card: string; sub: string }) {
+  const [showForm, setShowForm] = useState(false);
+  const [currentPass, setCurrentPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [status, setStatus] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = async (e: any) => {
+    e.preventDefault();
+    if (newPass !== confirmPass) { setStatus('❌ New passwords do not match'); return; }
+    if (newPass.length < 6) { setStatus('❌ Password must be at least 6 characters'); return; }
+    setSaving(true); setStatus('');
+    try {
+      const res = await fetch('/api/v1/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass }),
+      });
+      const data = await res.json();
+      if (res.ok) { setStatus('✅ Password changed successfully!'); setCurrentPass(''); setNewPass(''); setConfirmPass(''); }
+      else { setStatus(`❌ ${data.message || 'Failed to change password'}`); }
+    } catch { setStatus('❌ Network error'); }
+    setSaving(false);
+  };
+
+  const inputClass = dark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300 text-gray-900';
+
+  return (
+    <div className={`rounded-xl p-5 border ${card}`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">🔑 Change Password</h2>
+        <button onClick={() => setShowForm(!showForm)} className={`text-sm px-3 py-1 rounded-lg ${dark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{showForm ? 'Cancel' : 'Change'}</button>
+      </div>
+      {showForm && (
+        <form onSubmit={handleChange} className="mt-4 space-y-3 max-w-sm">
+          <div>
+            <label className={`block text-sm mb-1 ${sub}`}>Current Password</label>
+            <input type="password" value={currentPass} onChange={e => setCurrentPass(e.target.value)} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+          </div>
+          <div>
+            <label className={`block text-sm mb-1 ${sub}`}>New Password</label>
+            <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+          </div>
+          <div>
+            <label className={`block text-sm mb-1 ${sub}`}>Confirm New Password</label>
+            <input type="password" value={confirmPass} onChange={e => setConfirmPass(e.target.value)} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+          </div>
+          <button type="submit" disabled={saving} className="px-5 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium disabled:opacity-50">{saving ? 'Saving...' : 'Update Password'}</button>
+          {status && <p className={`text-sm mt-2 ${status.startsWith('✅') ? 'text-green-500' : 'text-red-500'}`}>{status}</p>}
+        </form>
+      )}
+    </div>
 
 function StatCard({ label, value, dark }: { label: string; value: any; dark: boolean }) {
   return (
