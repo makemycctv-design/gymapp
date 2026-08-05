@@ -15,8 +15,9 @@ import ProgressPage from './pages/Progress';
 import CreateMemberPage from './pages/CreateMember';
 import CreateStaffPage from './pages/CreateStaff';
 import MyClientsPage from './pages/MyClients';
+import MyPackagePage from './pages/MyPackage';
 
-export type Page = 'home' | 'members' | 'my-clients' | 'create-member' | 'create-staff' | 'trainers' | 'packages' | 'attendance' | 'payments' | 'alerts' | 'analytics' | 'branches' | 'checkin' | 'workout' | 'diet' | 'progress';
+export type Page = 'home' | 'members' | 'my-clients' | 'my-package' | 'create-member' | 'create-staff' | 'trainers' | 'packages' | 'attendance' | 'payments' | 'alerts' | 'analytics' | 'branches' | 'checkin' | 'workout' | 'diet' | 'progress';
 
 export default function App() {
   const [user, setUser] = useState<any>(() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } });
@@ -48,6 +49,7 @@ export default function App() {
       {page === 'home' && <DashboardPage {...props} />}
       {page === 'members' && <MembersPage {...props} />}
       {page === 'my-clients' && <MyClientsPage {...props} />}
+      {page === 'my-package' && <MyPackagePage {...props} />}
       {page === 'create-member' && <CreateMemberPage {...props} />}
       {page === 'create-staff' && <CreateStaffPage {...props} />}
       {page === 'trainers' && <TrainersPage {...props} />}
@@ -95,6 +97,7 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt,
   const memberNav = [
     { icon: '🏠', label: 'Dashboard', p: 'home' },
     { icon: '📍', label: 'Check In', p: 'checkin' },
+    { icon: '📦', label: 'My Package', p: 'my-package' },
     { icon: '🏋️', label: 'Workout', p: 'workout' },
     { icon: '🥗', label: 'Diet Plan', p: 'diet' },
     { icon: '📈', label: 'Progress', p: 'progress' },

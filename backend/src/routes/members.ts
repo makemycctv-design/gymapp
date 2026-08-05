@@ -122,6 +122,15 @@ router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Reque
 });
 
 
+// GET /api/v1/members/my-subscription
+router.get("/my-subscription", async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const member = await prisma.memberProfile.findFirst({ where: { userId: req.user!.id } });
+  if (!member) return res.status(404).json({ message: "Member profile not found" });
+  const subscription = await prisma.memberSubscription.findFirst({ where: { memberId: member.id, status: "ACTIVE" }, include: { package: true, branch: true }, orderBy: { createdAt: "desc" } });
+  res.json(subscription);
+});
+
 // POST /api/v1/members/reset-password/:userId - Reset member password
 router.post('/reset-password/:userId', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
@@ -169,3 +178,6 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+
+});
