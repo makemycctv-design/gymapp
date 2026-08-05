@@ -25,7 +25,7 @@ router.get('/my', async (req: Request, res: Response) => {
   if (!member) return res.status(404).json({ message: 'Member profile not found' });
 
   const plan = await prisma.dietPlan.findFirst({
-    where: { memberId: member.id, isActive: true, isApproved: true },
+    where: { memberId: member.id, isActive: true },
     include: { meals: { orderBy: [{ dayOfWeek: 'asc' }, { orderIndex: 'asc' }] }, trainer: { select: { firstName: true, lastName: true } } },
   });
   res.json(plan);
@@ -36,7 +36,7 @@ router.post('/', async (req: Request, res: Response) => {
   const { memberId, name, targetCalories, proteinGrams, carbsGrams, fatGrams, meals } = req.body;
   const plan = await prisma.dietPlan.create({
     data: {
-      memberId, trainerId: req.user!.id, name, targetCalories, proteinGrams, carbsGrams, fatGrams, isApproved: false, isActive: true,
+      memberId, trainerId: req.user!.id, name, targetCalories, proteinGrams, carbsGrams, fatGrams, isApproved: true, isActive: true,
       meals: { create: meals || [] },
     },
     include: { meals: true },
