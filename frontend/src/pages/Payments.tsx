@@ -137,7 +137,7 @@ export default function Payments({ user, dark, setPage }: Props) {
             </div>
             {cashStatus && <p className={`mb-3 text-sm p-2 rounded ${cashStatus.startsWith('✅') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{cashStatus}</p>}
             <div className="flex gap-3">
-              <button onClick={() => { setCashStatus('✅ Cash payment recorded successfully!'); setTimeout(() => { setShowPayment(null); setCashStatus(''); }, 2000); }} className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Confirm Received</button>
+              <button onClick={async () => { try { await fetch('/api/v1/payments/record-cash', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('token') }, body: JSON.stringify({ memberId: selectedSub.member?.id, subscriptionId: selectedSub.id, amount: Number(selectedSub.package?.price || 0) }) }); setCashStatus('✅ Cash payment recorded!'); setTimeout(() => { setShowPayment(null); setCashStatus(''); }, 2000); } catch { setCashStatus('❌ Failed'); } }} className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Confirm Received</button>
               <button onClick={() => setShowPayment(null)} className={`flex-1 px-4 py-2 rounded-lg border ${dark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
             </div>
           </div>
