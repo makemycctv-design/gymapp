@@ -4,12 +4,16 @@ import type { Page } from '../App';
 
 export default function DashboardPage({ user, dark, setPage }: { user: any; dark: boolean; setPage: (p: Page) => void }) {
   const [stats, setStats] = useState<any>(null);
+  const [branchName, setBranchName] = useState('');
   const card = dark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 shadow-sm';
   const sub = dark ? 'text-gray-400' : 'text-gray-500';
 
   useEffect(() => {
     if (user.role === 'SUPER_ADMIN' || user.role === 'BRANCH_MANAGER') {
       apiFetch('/analytics/dashboard').then(setStats).catch(() => {});
+    }
+    if (user.branchId) {
+      apiFetch('/branches').then(data => { const branches = Array.isArray(data) ? data : []; const b = branches.find((br: any) => br.id === user.branchId); if (b) setBranchName(b.name); }).catch(() => {});
     }
   }, []);
 
@@ -53,7 +57,7 @@ export default function DashboardPage({ user, dark, setPage }: { user: any; dark
           </div>
           <div>
             <p className="font-semibold">{user.firstName} {user.lastName}</p>
-            <p className={`text-sm ${sub}`}>{user.role.replace(/_/g, ' ')} • {user.email}</p>
+            <p className={`text-sm ${sub}`}>{user.role.replace(/_/g, ' ')} • {branchName || user.email}</p>
           </div>
         </div>
       </div>

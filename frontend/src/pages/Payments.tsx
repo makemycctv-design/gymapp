@@ -104,6 +104,45 @@ export default function Payments({ user, dark, setPage }: Props) {
           </div>
         </div>
       )}
+
+      {/* GPay Payment Modal */}
+      {showPayment === 'gpay' && selectedSub && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowPayment(null)}>
+          <div className={`w-full max-w-sm rounded-xl p-6 text-center ${dark ? 'bg-gray-800' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-bold mb-2">GPay / UPI Payment</h3>
+            <p className={`text-sm mb-1 ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Member: {selectedSub.member?.user?.firstName} {selectedSub.member?.user?.lastName}</p>
+            <p className={`text-sm mb-4 ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Package: {selectedSub.package?.name}</p>
+            <div className={`p-4 rounded-xl mb-4 ${dark ? 'bg-gray-700' : 'bg-gray-100'}`}>
+              <div className="w-44 h-44 mx-auto bg-white p-2 rounded-lg">
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=upi://pay?pa=fitness@upi%26pn=FitZone%26am=${selectedSub.package?.price || 0}%26cu=INR%26tn=${selectedSub.member?.user?.firstName}-${selectedSub.package?.name}`} alt="UPI QR" className="w-full h-full" />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-green-500 mb-1">₹{Number(selectedSub.package?.price || 0).toLocaleString()}</p>
+            <p className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>UPI ID: fitness@upi</p>
+            <p className={`text-xs mt-1 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>Scan with Google Pay / PhonePe / any UPI app</p>
+            <button onClick={() => setShowPayment(null)} className="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg w-full">Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Payment Modal */}
+      {showPayment === 'cash' && selectedSub && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowPayment(null)}>
+          <div className={`w-full max-w-sm rounded-xl p-6 ${dark ? 'bg-gray-800' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-bold mb-2">Record Cash Payment</h3>
+            <div className={`space-y-2 text-sm mb-4 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+              <p><strong>Member:</strong> {selectedSub.member?.user?.firstName} {selectedSub.member?.user?.lastName}</p>
+              <p><strong>Package:</strong> {selectedSub.package?.name}</p>
+              <p><strong>Amount:</strong> <span className="text-green-500 font-bold text-lg">₹{Number(selectedSub.package?.price || 0).toLocaleString()}</span></p>
+            </div>
+            {cashStatus && <p className={`mb-3 text-sm p-2 rounded ${cashStatus.startsWith('✅') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{cashStatus}</p>}
+            <div className="flex gap-3">
+              <button onClick={() => { setCashStatus('✅ Cash payment recorded successfully!'); setTimeout(() => { setShowPayment(null); setCashStatus(''); }, 2000); }} className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Confirm Received</button>
+              <button onClick={() => setShowPayment(null)} className={`flex-1 px-4 py-2 rounded-lg border ${dark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
