@@ -71,7 +71,7 @@ router.post('/geo-fence', async (req: Request, res: Response) => {
 });
 
 // GET /api/v1/attendance/today
-router.get('/today', requireRole('BRANCH_MANAGER'), async (req: Request, res: Response) => {
+router.get('/today', requireRole('BRANCH_MANAGER', 'PERSONAL_TRAINER', 'FLOOR_TRAINER'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const records = await prisma.attendance.findMany({
