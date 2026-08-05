@@ -79,16 +79,6 @@ export default function MyPackage({ user, dark, setPage }: Props) {
         </div>
       )}
 
-      {/* Branch Info */}
-      {subscription?.branch && (
-        <div className={`rounded-xl p-4 border mb-6 ${cardClass}`}>
-          <h3 className="font-semibold mb-2">🏢 My Branch</h3>
-          <p className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-600'}`}>{subscription.branch.name}</p>
-          <p className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{subscription.branch.address}, {subscription.branch.city}</p>
-          <p className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>📞 {subscription.branch.phone}</p>
-        </div>
-      )}
-
 
       {/* GPay Payment Modal */}
       {showPayment && (

@@ -35,6 +35,9 @@ export default function DashboardPage({ user, dark, setPage }: { user: any; dark
     { icon: '📈', label: 'Progress', p: 'progress' as Page },
   ];
 
+  const [branchInfo, setBranchInfo] = useState<any>(null);
+  useEffect(() => { if (user.role === 'MEMBER') apiFetch('/members/my-subscription').then(d => { if (d?.branch) setBranchInfo(d.branch); }).catch(() => {}); }, []);
+
   const trainerActions = [
     { icon: '👥', label: 'My Clients', p: 'my-clients' as Page },
     { icon: '📦', label: 'Packages', p: 'packages' as Page },
@@ -80,6 +83,16 @@ export default function DashboardPage({ user, dark, setPage }: { user: any; dark
           ))}
         </div>
       </div>
+
+      {/* Change Password */}
+      {branchInfo && (
+        <div className={`rounded-xl p-4 border ${card}`}>
+          <h3 className="font-semibold mb-2">🏢 My Branch</h3>
+          <p className="font-medium">{branchInfo.name}</p>
+          <p className={`text-sm ${sub}`}>{branchInfo.address}{branchInfo.city ? `, ${branchInfo.city}` : ''}</p>
+          <p className={`text-sm ${sub}`}>📞 {branchInfo.phone}</p>
+        </div>
+      )}
 
       {/* Change Password */}
       <ChangePasswordSection dark={dark} card={card} sub={sub} />
