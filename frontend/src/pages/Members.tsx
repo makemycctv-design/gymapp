@@ -99,12 +99,15 @@ export default function Members({ user, dark, setPage }: Props) {
               className={`p-4 border rounded-lg ${cardClass}`}
             >
               <h3 className="font-semibold text-lg">
-                {member.firstName} {member.lastName}
+                {member.user?.firstName || member.firstName || ''} {member.user?.lastName || member.lastName || ''}
               </h3>
               <div className={`mt-2 text-sm space-y-1 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>
-                <p>ID: <span className="font-mono">{member.memberId || member.id || member._id}</span></p>
-                <p>Phone: {member.phone || 'N/A'}</p>
-                <p>Email: {member.email || 'N/A'}</p>
+                <p>ID: <span className="font-mono">{member.memberId || member.id}</span></p>
+                <p>Phone: {member.user?.phone || member.phone || 'N/A'}</p>
+                <p>Email: {member.user?.email || member.email || 'N/A'}</p>
+                {member.subscriptions && member.subscriptions[0] && (
+                  <p className="mt-1"><span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">{member.subscriptions[0].package?.name || 'Active'}</span></p>
+                )}
               </div>
             </div>
           ))}
