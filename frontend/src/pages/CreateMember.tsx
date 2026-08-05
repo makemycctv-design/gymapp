@@ -17,16 +17,17 @@ export default function CreateMember({ user, dark, setPage }: Props) {
     gender: '',
     packageId: '',
     trainerTier: 'FLOOR',
+    assignedTrainerId: '',
   });
   const [packages, setPackages] = useState<any[]>([]);
+  const [trainers, setTrainers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [credentials, setCredentials] = useState<any>(null);
 
   useEffect(() => {
-    apiFetch('/packages')
-      .then((data) => setPackages(Array.isArray(data) ? data : data.packages || []))
-      .catch(() => {});
+    apiFetch('/packages').then((data) => setPackages(Array.isArray(data) ? data : [])).catch(() => {});
+    apiFetch('/trainers').then((data) => setTrainers(Array.isArray(data) ? data : [])).catch(() => {});
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -231,6 +232,26 @@ export default function CreateMember({ user, dark, setPage }: Props) {
             <option value="PERSONAL">Personal Trainer</option>
           </select>
         </div>
+
+        {form.trainerTier === 'PERSONAL' && (
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+            Assign Personal Trainer *
+          </label>
+          <select
+            name="assignedTrainerId"
+            value={form.assignedTrainerId}
+            onChange={handleChange}
+            required
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}
+          >
+            <option value="">Select Trainer...</option>
+            {trainers.filter(t => t.user?.role === 'PERSONAL_TRAINER' && t.isAvailable).map((t: any) => (
+              <option key={t.user?.id || t.id} value={t.user?.id || t.id}>{t.user?.firstName} {t.user?.lastName} ({t.currentClients || 0}/{t.maxClients || 15} clients)</option>
+            ))}
+          </select>
+        </div>
+        )}
 
         <div className="flex gap-3 pt-2">
           <button

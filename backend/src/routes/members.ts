@@ -57,7 +57,7 @@ router.get('/search', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: 
 // POST /api/v1/members - Create new member
 router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
-  const { email, phone, firstName, lastName, dateOfBirth, gender, packageId, trainerTier } = req.body;
+  const { email, phone, firstName, lastName, dateOfBirth, gender, packageId, trainerTier, assignedTrainerId } = req.body;
 
   if (!email || !phone || !firstName || !lastName || !packageId) {
     return res.status(400).json({ message: 'Missing required fields: email, phone, firstName, lastName, packageId' });
@@ -101,6 +101,14 @@ router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Reque
     await prisma.memberSubscription.create({
       data: { memberId: profile.id, packageId, branchId, startDate, endDate, status: 'ACTIVE' },
     });
+
+    // Assign personal trainer if selected
+    if (trainerTier === 'PERSONAL' && assignedTrainerId) {
+      await prisma.memberProfile.update({
+        where: { id: profile.id },
+        data: { assignedTrainerId },
+      });
+    }
 
     res.status(201).json({
       memberId,

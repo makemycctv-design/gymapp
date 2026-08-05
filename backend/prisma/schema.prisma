@@ -94,6 +94,7 @@ model MemberProfile {
   medicalNotes          String?
   joinDate              DateTime    @default(now())
   trainerTier           String      @default("FLOOR")
+  assignedTrainerId     String?
 
   user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   branch        Branch              @relation(fields: [branchId], references: [id])

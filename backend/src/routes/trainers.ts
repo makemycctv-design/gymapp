@@ -68,12 +68,12 @@ router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Reque
 // GET /api/v1/trainers/my-clients
 router.get('/my-clients', async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
-  const plans = await prisma.workoutPlan.findMany({
-    where: { trainerId: req.user!.id, isActive: true },
-    include: { member: { include: { user: { select: { firstName: true, lastName: true, phone: true } } } } },
+  // Find members assigned to this trainer
+  const assignedMembers = await prisma.memberProfile.findMany({
+    where: { assignedTrainerId: req.user!.id },
+    include: { user: { select: { firstName: true, lastName: true, phone: true, email: true } }, subscriptions: { where: { status: 'ACTIVE' }, include: { package: { select: { name: true } } }, take: 1 } },
   });
-  const uniqueMembers = [...new Map(plans.map(p => [p.memberId, p.member])).values()];
-  res.json(uniqueMembers);
+  res.json(assignedMembers);
 });
 
 export default router;
