@@ -104,6 +104,9 @@ function ChangePasswordSection({ dark, card, sub }: { dark: boolean; card: strin
   };
 
   const inputClass = dark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300 text-gray-900';
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   return (
     <div className={`rounded-xl p-5 border ${card}`}>
@@ -115,18 +118,30 @@ function ChangePasswordSection({ dark, card, sub }: { dark: boolean; card: strin
         <form onSubmit={handleChange} className="mt-4 space-y-3 max-w-sm">
           <div>
             <label className={`block text-sm mb-1 ${sub}`}>Current Password</label>
-            <input type="password" value={currentPass} onChange={e => setCurrentPass(e.target.value)} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            <div className="relative">
+              <input type={showCurrent ? 'text' : 'password'} value={currentPass} onChange={e => setCurrentPass(e.target.value)} required className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+              <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-2.5 text-sm">{showCurrent ? '🙈' : '👁️'}</button>
+            </div>
           </div>
           <div>
             <label className={`block text-sm mb-1 ${sub}`}>New Password</label>
-            <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            <div className="relative">
+              <input type={showNew ? 'text' : 'password'} value={newPass} onChange={e => setNewPass(e.target.value)} required className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+              <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-2.5 text-sm">{showNew ? '🙈' : '👁️'}</button>
+            </div>
           </div>
           <div>
             <label className={`block text-sm mb-1 ${sub}`}>Confirm New Password</label>
-            <input type="password" value={confirmPass} onChange={e => setConfirmPass(e.target.value)} required className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+            <div className="relative">
+              <input type={showConfirm ? 'text' : 'password'} value={confirmPass} onChange={e => setConfirmPass(e.target.value)} required className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none ${inputClass}`} />
+              <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-2.5 text-sm">{showConfirm ? '🙈' : '👁️'}</button>
+            </div>
           </div>
-          <button type="submit" disabled={saving} className="px-5 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium disabled:opacity-50">{saving ? 'Saving...' : 'Update Password'}</button>
-          {status && <p className={`text-sm mt-2 ${status.startsWith('✅') ? 'text-green-500' : 'text-red-500'}`}>{status}</p>}
+          <div className="flex gap-3 items-center">
+            <button type="submit" disabled={saving} className="px-5 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium disabled:opacity-50">{saving ? 'Saving...' : 'Update Password'}</button>
+            <button type="button" onClick={() => { setStatus('💡 Contact your branch manager or admin to reset your password.'); }} className={`text-sm underline ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Forgot password?</button>
+          </div>
+          {status && <p className={`text-sm mt-2 ${status.startsWith('✅') ? 'text-green-500' : status.startsWith('💡') ? (dark ? 'text-blue-400' : 'text-blue-600') : 'text-red-500'}`}>{status}</p>}
         </form>
       )}
     </div>
