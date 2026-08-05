@@ -3,6 +3,50 @@ import { apiFetch, apiPost } from '../lib/api';
 
 interface Props { user: any; dark: boolean; setPage: (page: string) => void; }
 
+// Simple SVG Line Chart Component
+function MiniChart({ data, dataKey, label, color, dark }: { data: any[]; dataKey: string; label: string; color: string; dark: boolean }) {
+  const values = data.map(d => Number(d[dataKey]) || 0).filter(v => v > 0);
+  if (values.length < 2) return null;
+
+  const min = Math.min(...values) * 0.9;
+  const max = Math.max(...values) * 1.1;
+  const range = max - min || 1;
+  const width = 300;
+  const height = 120;
+  const padding = 20;
+
+  const points = values.map((v, i) => ({
+    x: padding + (i / (values.length - 1)) * (width - padding * 2),
+    y: height - padding - ((v - min) / range) * (height - padding * 2),
+  }));
+
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const latest = values[values.length - 1];
+  const first = values[0];
+  const change = latest - first;
+  const changeText = change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
+
+  return (
+    <div className={`rounded-xl p-4 border ${dark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+      <div className="flex justify-between items-center mb-2">
+        <p className={`text-sm font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>{label}</p>
+        <div className="text-right">
+          <span className="text-lg font-bold" style={{ color }}>{latest}</span>
+          <span className={`text-xs ml-2 ${change > 0 ? 'text-red-500' : 'text-green-500'}`}>{changeText}</span>
+        </div>
+      </div>
+      <svg width="100%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+        <path d={pathD} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3" fill={color} />)}
+      </svg>
+      <div className="flex justify-between mt-1">
+        <span className={`text-[10px] ${dark ? 'text-gray-500' : 'text-gray-400'}`}>{data[0]?.date ? new Date(data[0].date).toLocaleDateString() : ''}</span>
+        <span className={`text-[10px] ${dark ? 'text-gray-500' : 'text-gray-400'}`}>{data[data.length - 1]?.date ? new Date(data[data.length - 1].date).toLocaleDateString() : ''}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Progress({ user, dark, setPage }: Props) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +85,21 @@ export default function Progress({ user, dark, setPage }: Props) {
       </div>
 
       {status && <p className={`mb-4 text-sm p-3 rounded-lg ${status.startsWith('✅') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{status}</p>}
+
+      {/* Progress Charts */}
+      {!loading && data.length >= 2 && (
+        <div className="mb-6">
+          <h2 className={`text-lg font-semibold mb-3 ${dark ? 'text-white' : 'text-gray-900'}`}>📈 Progress Charts</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <MiniChart data={[...data].reverse()} dataKey="weightKg" label="Weight (kg)" color="#3B82F6" dark={dark} />
+            <MiniChart data={[...data].reverse()} dataKey="bodyFatPercentage" label="Body Fat %" color="#EF4444" dark={dark} />
+            <MiniChart data={[...data].reverse()} dataKey="muscleMassKg" label="Muscle Mass (kg)" color="#10B981" dark={dark} />
+            <MiniChart data={[...data].reverse()} dataKey="waistCm" label="Waist (cm)" color="#F59E0B" dark={dark} />
+            <MiniChart data={[...data].reverse()} dataKey="chestCm" label="Chest (cm)" color="#8B5CF6" dark={dark} />
+            <MiniChart data={[...data].reverse()} dataKey="bicepsCm" label="Biceps (cm)" color="#EC4899" dark={dark} />
+          </div>
+        </div>
+      )}
 
 
       {showCreate && (
