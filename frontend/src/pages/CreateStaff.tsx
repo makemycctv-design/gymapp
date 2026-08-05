@@ -66,6 +66,13 @@ export default function CreateStaff({ user, dark, setPage }: Props) {
           </div>
           <div className="flex gap-3 mt-4">
             <button onClick={() => { setCredentials(null); setForm({...form, firstName: '', lastName: '', email: '', phone: '' }); }} className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Create Another</button>
+            <button
+              onClick={() => {
+                const msg = `Welcome to FitZone Gym! 🏋️\n\nYour Staff Login Credentials:\n👔 Role: ${form.role.replace(/_/g, ' ')}\n📧 Email: ${creds.email || ''}\n🔑 Password: ${creds.temporaryPassword || ''}\n🏢 Branch: ${branches.find(b => b.id === form.branchId)?.name || ''}\n\n🔗 Login at: https://fitness.nokkoo.in\n\n⚠️ Please change your password on first login.`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+            >📱 Share via WhatsApp</button>
             <button onClick={() => setPage('home')} className={`px-4 py-2 rounded-lg border ${dark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Back to Dashboard</button>
           </div>
         </div>
