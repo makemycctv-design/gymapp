@@ -18,11 +18,15 @@ async function getBranchId(prisma: PrismaClient, user: any): Promise<string | nu
 // GET /api/v1/members
 router.get('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
-  const branchId = await getBranchId(prisma, req.user!);
-  if (!branchId) return res.json([]);
+
+  // Super Admin sees all members, Branch Manager sees their branch only
+  const where: any = { user: { isActive: true } };
+  if (req.user!.branchId) {
+    where.branchId = req.user!.branchId;
+  }
 
   const members = await prisma.memberProfile.findMany({
-    where: { branchId, user: { isActive: true } },
+    where,
     include: { user: { select: { id: true, email: true, phone: true, firstName: true, lastName: true, isActive: true, lastLoginAt: true } }, subscriptions: { where: { status: 'ACTIVE' }, include: { package: { select: { name: true } } }, take: 1 } },
     orderBy: { joinDate: 'desc' },
   });
