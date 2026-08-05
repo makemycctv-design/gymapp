@@ -242,6 +242,8 @@ model DietPlan {
   proteinGrams   Int
   carbsGrams     Int
   fatGrams       Int
+  foodsToEat     String[]
+  foodsToAvoid   String[]
   isApproved     Boolean  @default(false)
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())

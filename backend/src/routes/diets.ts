@@ -33,10 +33,10 @@ router.get('/my', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
-  const { memberId, name, targetCalories, proteinGrams, carbsGrams, fatGrams, meals } = req.body;
+  const { memberId, name, targetCalories, proteinGrams, carbsGrams, fatGrams, meals, foodsToEat, foodsToAvoid } = req.body;
   const plan = await prisma.dietPlan.create({
     data: {
-      memberId, trainerId: req.user!.id, name, targetCalories, proteinGrams, carbsGrams, fatGrams, isApproved: true, isActive: true,
+      memberId, trainerId: req.user!.id, name, targetCalories, proteinGrams, carbsGrams, fatGrams, foodsToEat: foodsToEat || [], foodsToAvoid: foodsToAvoid || [], isApproved: true, isActive: true,
       meals: { create: meals || [] },
     },
     include: { meals: true },

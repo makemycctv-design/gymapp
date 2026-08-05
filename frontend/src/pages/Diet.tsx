@@ -9,7 +9,7 @@ export default function Diet({ user, dark, setPage }: Props) {
   const [error, setError] = useState('');
   const [clients, setClients] = useState<any[]>([]);
   const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ memberId: '', name: '', targetCalories: 2000, proteinGrams: 150, carbsGrams: 200, fatGrams: 70 });
+  const [form, setForm] = useState({ memberId: '', name: '', targetCalories: 2000, proteinGrams: 150, carbsGrams: 200, fatGrams: 70, foodsToEat: '', foodsToAvoid: '' });
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -25,8 +25,8 @@ export default function Diet({ user, dark, setPage }: Props) {
   const handleCreate = async (e: any) => {
     e.preventDefault(); setSaving(true); setStatus('');
     try {
-      await apiPost('/diets', { ...form, meals: [] });
-      setStatus('✅ Diet plan created!'); setShowCreate(false); setForm({ memberId: '', name: '', targetCalories: 2000, proteinGrams: 150, carbsGrams: 200, fatGrams: 70 });
+      await apiPost('/diets', { ...form, foodsToEat: form.foodsToEat.split(',').map(s => s.trim()).filter(Boolean), foodsToAvoid: form.foodsToAvoid.split(',').map(s => s.trim()).filter(Boolean), meals: [] });
+      setStatus('✅ Diet plan created!'); setShowCreate(false); setForm({ memberId: '', name: '', targetCalories: 2000, proteinGrams: 150, carbsGrams: 200, fatGrams: 70, foodsToEat: '', foodsToAvoid: '' });
       apiFetch('/diets/my').then(setData);
     } catch (err: any) { setStatus(`❌ ${err.message}`); }
     setSaving(false);
@@ -58,6 +58,8 @@ export default function Diet({ user, dark, setPage }: Props) {
               <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Carbs (g)</label><input type="number" value={form.carbsGrams} onChange={e => setForm({...form, carbsGrams: Number(e.target.value)})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
               <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Fat (g)</label><input type="number" value={form.fatGrams} onChange={e => setForm({...form, fatGrams: Number(e.target.value)})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
             </div>
+            <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Foods to Eat (comma separated)</label><textarea value={form.foodsToEat} onChange={e => setForm({...form, foodsToEat: e.target.value})} rows={3} placeholder="e.g. Chicken breast, Brown rice, Eggs, Oats, Broccoli, Sweet potato, Greek yogurt" className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+            <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Foods to Avoid (comma separated)</label><textarea value={form.foodsToAvoid} onChange={e => setForm({...form, foodsToAvoid: e.target.value})} rows={3} placeholder="e.g. Fried food, Sugar, White bread, Soda, Processed snacks, Alcohol" className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
             <button type="submit" disabled={saving} className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50">{saving ? 'Creating...' : 'Create Diet Plan'}</button>
           </form>
         </div>
@@ -81,6 +83,12 @@ export default function Diet({ user, dark, setPage }: Props) {
               <div className={`text-sm mt-2 flex gap-4 ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
                 <span>{plan.targetCalories} kcal</span><span>P: {plan.proteinGrams}g</span><span>C: {plan.carbsGrams}g</span><span>F: {plan.fatGrams}g</span>
               </div>
+              {plan.foodsToEat && plan.foodsToEat.length > 0 && (
+                <div className="mt-2"><span className={`text-xs font-medium ${dark ? 'text-green-400' : 'text-green-600'}`}>✅ Eat: </span><span className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-600'}`}>{Array.isArray(plan.foodsToEat) ? plan.foodsToEat.join(', ') : plan.foodsToEat}</span></div>
+              )}
+              {plan.foodsToAvoid && plan.foodsToAvoid.length > 0 && (
+                <div className="mt-1"><span className={`text-xs font-medium ${dark ? 'text-red-400' : 'text-red-600'}`}>❌ Avoid: </span><span className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-600'}`}>{Array.isArray(plan.foodsToAvoid) ? plan.foodsToAvoid.join(', ') : plan.foodsToAvoid}</span></div>
+              )}
               <p className={`text-xs mt-2 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>Created: {new Date(plan.createdAt).toLocaleDateString()}</p>
             </div>
           ))}
@@ -95,6 +103,12 @@ export default function Diet({ user, dark, setPage }: Props) {
         <div className={`p-5 border rounded-xl ${cardClass}`}>
           <h3 className="font-bold">{data.name}</h3>
           <div className={`text-sm mt-2 flex gap-4 ${dark ? 'text-gray-400' : 'text-gray-600'}`}><span>{data.targetCalories} kcal</span><span>P: {data.proteinGrams}g</span><span>C: {data.carbsGrams}g</span><span>F: {data.fatGrams}g</span></div>
+          {data.foodsToEat && data.foodsToEat.length > 0 && (
+            <div className={`mt-3 p-3 rounded-lg ${dark ? 'bg-green-900/20' : 'bg-green-50'}`}><p className={`text-sm font-medium ${dark ? 'text-green-400' : 'text-green-700'}`}>✅ Foods to Eat:</p><p className={`text-sm mt-1 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>{data.foodsToEat.join(', ')}</p></div>
+          )}
+          {data.foodsToAvoid && data.foodsToAvoid.length > 0 && (
+            <div className={`mt-2 p-3 rounded-lg ${dark ? 'bg-red-900/20' : 'bg-red-50'}`}><p className={`text-sm font-medium ${dark ? 'text-red-400' : 'text-red-700'}`}>❌ Foods to Avoid:</p><p className={`text-sm mt-1 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>{data.foodsToAvoid.join(', ')}</p></div>
+          )}
         </div>
       )}
 
