@@ -54,3 +54,11 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+// POST /api/v1/staff/deactivate/:userId - Deactivate a staff member
+router.post('/deactivate/:userId', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const { userId } = req.params;
+  await prisma.user.update({ where: { id: userId }, data: { isActive: false } });
+  res.json({ message: 'Staff deactivated' });
+});
