@@ -35,3 +35,15 @@ router.post('/delete/:id', requireRole('SUPER_ADMIN'), async (req: Request, res:
   await prisma.branch.update({ where: { id: req.params.id }, data: { isActive: false } });
   res.json({ message: 'Branch deleted' });
 });
+
+
+// POST /api/v1/branches/update/:id - Update branch details
+router.post('/update/:id', requireRole('SUPER_ADMIN'), async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  const { name, address, city, state, zipCode, phone, email, geoFenceRadiusMeters, latitude, longitude } = req.body;
+  const branch = await prisma.branch.update({
+    where: { id: req.params.id },
+    data: { name, address, city, state, zipCode, phone, email, geoFenceRadiusMeters, latitude, longitude },
+  });
+  res.json(branch);
+});

@@ -15,7 +15,7 @@ export default function Branches({ user, dark, setPage }: Props) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', code: '', address: '', city: '', state: '', zipCode: '', phone: '', email: '', latitude: 0, longitude: 0, geoFenceRadiusMeters: 50 });
   const [editBranch, setEditBranch] = useState<any>(null);
-  const [editBranchForm, setEditBranchForm] = useState({ name: '', address: '', city: '', state: '', phone: '', email: '', geoFenceRadiusMeters: 50 });
+  const [editBranchForm, setEditBranchForm] = useState({ name: '', address: '', city: '', state: '', zipCode: '', phone: '', email: '', geoFenceRadiusMeters: 50, latitude: 0, longitude: 0 });
 
   const fetchBranches = () => {
     setLoading(true);
@@ -129,7 +129,7 @@ export default function Branches({ user, dark, setPage }: Props) {
               </div>
               {isAdmin && (
                 <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <button onClick={() => { setEditBranch(branch); setEditBranchForm({ name: branch.name, address: branch.address, city: branch.city, state: branch.state, phone: branch.phone, email: branch.email, geoFenceRadiusMeters: branch.geoFenceRadiusMeters }); }} className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
+                  <button onClick={() => { setEditBranch(branch); setEditBranchForm({ name: branch.name, address: branch.address, city: branch.city, state: branch.state, zipCode: branch.zipCode || '', phone: branch.phone, email: branch.email, geoFenceRadiusMeters: branch.geoFenceRadiusMeters, latitude: branch.latitude || 0, longitude: branch.longitude || 0 }); }} className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
                   <button onClick={async () => { if (!confirm(`Delete branch "${branch.name}"? This cannot be undone.`)) return; try { await fetch('/api/v1/branches/delete/' + branch.id, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); fetchBranches(); } catch {} }} className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
                 </div>
               )}
@@ -145,20 +145,22 @@ export default function Branches({ user, dark, setPage }: Props) {
       {/* Edit Branch Modal */}
       {editBranch && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setEditBranch(null)}>
-          <div className={`w-full max-w-md rounded-xl p-6 ${dark ? 'bg-gray-800' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
+          <div className={`w-full max-w-lg rounded-xl p-6 max-h-[90vh] overflow-y-auto ${dark ? 'bg-gray-800' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-bold mb-4">Edit Branch: {editBranch.name}</h3>
-            <div className="space-y-3">
-              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Name</label><input value={editBranchForm.name} onChange={e => setEditBranchForm({...editBranchForm, name: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
-              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Address</label><input value={editBranchForm.address} onChange={e => setEditBranchForm({...editBranchForm, address: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>City</label><input value={editBranchForm.city} onChange={e => setEditBranchForm({...editBranchForm, city: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
-                <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>State</label><input value={editBranchForm.state} onChange={e => setEditBranchForm({...editBranchForm, state: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="md:col-span-2"><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Branch Name</label><input value={editBranchForm.name} onChange={e => setEditBranchForm({...editBranchForm, name: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+              <div className="md:col-span-2"><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Address</label><input value={editBranchForm.address} onChange={e => setEditBranchForm({...editBranchForm, address: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>City</label><input value={editBranchForm.city} onChange={e => setEditBranchForm({...editBranchForm, city: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>State</label><input value={editBranchForm.state} onChange={e => setEditBranchForm({...editBranchForm, state: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Zip Code</label><input value={editBranchForm.zipCode} onChange={e => setEditBranchForm({...editBranchForm, zipCode: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
               <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Phone</label><input value={editBranchForm.phone} onChange={e => setEditBranchForm({...editBranchForm, phone: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Email</label><input value={editBranchForm.email} onChange={e => setEditBranchForm({...editBranchForm, email: e.target.value})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
               <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Geo-fence Radius (m)</label><input type="number" value={editBranchForm.geoFenceRadiusMeters} onChange={e => setEditBranchForm({...editBranchForm, geoFenceRadiusMeters: Number(e.target.value)})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Latitude</label><input type="number" step="any" value={editBranchForm.latitude} onChange={e => setEditBranchForm({...editBranchForm, latitude: Number(e.target.value)})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
+              <div><label className={`block text-sm mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Longitude</label><input type="number" step="any" value={editBranchForm.longitude} onChange={e => setEditBranchForm({...editBranchForm, longitude: Number(e.target.value)})} className={`w-full px-3 py-2 border rounded-lg ${inputClass}`} /></div>
             </div>
             <div className="flex gap-3 mt-4">
-              <button onClick={() => { /* TODO: save via API */ setEditBranch(null); }} className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Save</button>
+              <button onClick={async () => { try { await fetch('/api/v1/branches/update/' + editBranch.id, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify(editBranchForm) }); setEditBranch(null); fetchBranches(); } catch {} }} className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Save</button>
               <button onClick={() => setEditBranch(null)} className={`flex-1 px-4 py-2 rounded-lg border ${dark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
             </div>
           </div>
