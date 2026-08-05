@@ -177,22 +177,35 @@ export default function CreateStaff({ user, dark, setPage }: Props) {
           <div className="space-y-3">
             {staff.map((s: any) => (
               <div key={s.id} className={`p-4 rounded-lg border flex items-center justify-between flex-wrap gap-3 ${dark ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${s.role === 'BRANCH_MANAGER' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${s.role === 'BRANCH_MANAGER' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
                     {s.firstName?.[0]}{s.lastName?.[0]}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-medium">{s.firstName} {s.lastName}</p>
                     <p className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{s.email} • {s.phone}</p>
-                    <div className="flex gap-1 mt-1">
+                    <div className="flex gap-1 mt-1 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${s.role === 'BRANCH_MANAGER' ? 'bg-blue-100 text-blue-700' : s.role === 'PERSONAL_TRAINER' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700'}`}>
                         {s.role?.replace(/_/g, ' ')}
                       </span>
                       {s.branch && <span className={`px-2 py-0.5 rounded-full text-[10px] ${dark ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>{s.branch.name}</span>}
+                      {s.trainerProfile?.specializations?.length > 0 && s.trainerProfile.specializations.map((sp: string, i: number) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full text-[10px] bg-green-100 text-green-700">{sp}</span>
+                      ))}
+                      {s.trainerProfile?.certifications?.length > 0 && s.trainerProfile.certifications.map((c: string, i: number) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full text-[10px] bg-yellow-100 text-yellow-700">{c}</span>
+                      ))}
                     </div>
+                    {s.trainerProfile && (
+                      <p className={`text-[10px] mt-1 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        Clients: {s.trainerProfile.currentClients || 0}/{s.trainerProfile.maxClients || 15} • {s.trainerProfile.isAvailable ? '🟢 Available' : '🔴 Busy'}
+                        {s.trainerProfile.bio && ` • ${s.trainerProfile.bio}`}
+                      </p>
+                    )}
+                    {s.lastLoginAt && <p className={`text-[10px] ${dark ? 'text-gray-500' : 'text-gray-400'}`}>Last login: {new Date(s.lastLoginAt).toLocaleDateString()}</p>}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 shrink-0">
                   <button onClick={() => setEditStaff(s)} className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
                   <button onClick={() => deleteStaff(s.id, `${s.firstName} ${s.lastName}`)} className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
                 </div>

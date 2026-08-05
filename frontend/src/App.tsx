@@ -69,7 +69,6 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt,
   const adminNav = [
     { icon: '🏠', label: 'Dashboard', p: 'home' },
     { icon: '👥', label: 'Members', p: 'members' },
-    { icon: '🏋️', label: 'Trainers', p: 'trainers' },
     { icon: '👔', label: 'Create Staff', p: 'create-staff' },
     { icon: '📦', label: 'Packages', p: 'packages' },
     { icon: '✅', label: 'Attendance', p: 'attendance' },

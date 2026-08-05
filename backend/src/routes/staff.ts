@@ -47,7 +47,7 @@ router.get('/', async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
   const staff = await prisma.user.findMany({
     where: { role: { in: ['BRANCH_MANAGER', 'PERSONAL_TRAINER', 'FLOOR_TRAINER'] }, isActive: true },
-    select: { id: true, email: true, phone: true, firstName: true, lastName: true, role: true, branchId: true, lastLoginAt: true, branch: { select: { name: true, code: true } } },
+    select: { id: true, email: true, phone: true, firstName: true, lastName: true, role: true, branchId: true, lastLoginAt: true, branch: { select: { name: true, code: true } }, trainerProfile: { select: { specializations: true, certifications: true, bio: true, maxClients: true, currentClients: true, isAvailable: true } } },
     orderBy: { createdAt: 'desc' },
   });
   res.json(staff);
