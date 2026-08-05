@@ -11,12 +11,18 @@ export default function Analytics({ user, dark, setPage }: Props) {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [branches, setBranches] = useState<any[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState('');
+
+  const fetchAnalytics = (branchId?: string) => {
+    setLoading(true);
+    const url = branchId ? `/analytics/dashboard?branchId=${branchId}` : '/analytics/dashboard';
+    apiFetch(url).then((data) => setStats(data)).catch((err) => setError(err.message)).finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    apiFetch('/analytics/dashboard')
-      .then((data) => setStats(data))
-      .catch((err) => setError(err.message || 'Failed to fetch analytics'))
-      .finally(() => setLoading(false));
+    fetchAnalytics();
+    if (user.role === 'SUPER_ADMIN') apiFetch('/branches').then(d => setBranches(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   const cardClass = dark
@@ -25,9 +31,15 @@ export default function Analytics({ user, dark, setPage }: Props) {
 
   return (
     <div className="p-6">
-      <h1 className={`text-2xl font-bold mb-6 ${dark ? 'text-white' : 'text-gray-900'}`}>
-        Analytics Dashboard
-      </h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>Analytics Dashboard</h1>
+        {user.role === 'SUPER_ADMIN' && branches.length > 0 && (
+          <select value={selectedBranch} onChange={e => { setSelectedBranch(e.target.value); fetchAnalytics(e.target.value || undefined); }} className={`px-3 py-2 border rounded-lg text-sm ${dark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}>
+            <option value="">All Branches</option>
+            {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        )}
+      </div>
 
 
       {loading && (

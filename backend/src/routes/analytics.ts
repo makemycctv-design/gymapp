@@ -10,7 +10,7 @@ function getPrisma(req: Request): PrismaClient { return req.app.locals.prisma; }
 
 router.get('/dashboard', async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
-  const branchId = req.user!.branchId;
+  const branchId = (req.query.branchId as string) || req.user!.branchId;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
