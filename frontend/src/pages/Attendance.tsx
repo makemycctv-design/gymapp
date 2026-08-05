@@ -127,10 +127,10 @@ export default function Attendance({ user, dark, setPage }: Props) {
                     className={`border-b ${dark ? 'border-gray-700' : 'border-gray-100'}`}
                   >
                     <td className="py-2 px-3">
-                      {record.memberName || record.member?.firstName || 'N/A'}
+                      {record.memberName || record.member?.user?.firstName && `${record.member.user.firstName} ${record.member.user.lastName}` || record.member?.firstName || 'N/A'}
                     </td>
                     <td className="py-2 px-3 font-mono text-xs">
-                      {record.memberId || record.member?.memberId || 'N/A'}
+                      {record.member?.memberId || record.memberId || 'N/A'}
                     </td>
                     <td className="py-2 px-3">
                       {record.checkInTime
