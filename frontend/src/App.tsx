@@ -110,6 +110,8 @@ function Layout({ children, user, dark, setDark, setPage, logout, installPrompt,
     { icon: '🏋️', label: 'Workouts', p: 'workout' },
     { icon: '🥗', label: 'Diet Plans', p: 'diet' },
     { icon: '📏', label: 'Measurements', p: 'progress' },
+    { icon: '📦', label: 'Packages', p: 'packages' },
+    { icon: '✅', label: 'Attendance', p: 'attendance' },
   ];
 
   const navItems = user.role === 'MEMBER' ? memberNav : (user.role === 'PERSONAL_TRAINER' || user.role === 'FLOOR_TRAINER') ? trainerNav : user.role === 'BRANCH_MANAGER' ? managerNav : adminNav;
