@@ -69,6 +69,7 @@ export default function Workout({ user, dark, setPage }: Props) {
                 <div><h3 className="font-bold">{plan.name}</h3><p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Client: {plan.member?.user?.firstName} {plan.member?.user?.lastName}</p></div>
                 <div className="flex gap-2 items-center">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${plan.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{plan.isActive ? 'Active' : 'Inactive'}</span>
+                  <button onClick={() => { setShowCreate(true); setForm({ memberId: plan.memberId || '', name: plan.name, exercises: plan.description || '' }); }} className="px-2 py-0.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
                   <button onClick={async () => { if (!confirm('Delete this workout plan?')) return; try { await fetch('/api/v1/workouts/delete/' + plan.id, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); apiFetch('/workouts/my').then(setData); } catch {} }} className="px-2 py-0.5 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
                 </div>
               </div>
