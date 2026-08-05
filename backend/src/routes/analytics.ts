@@ -16,7 +16,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
 
   const [totalMembers, activeSubscriptions, todayAttendance, monthlyPayments] = await Promise.all([
     prisma.memberProfile.count({ where: branchId ? { branchId, user: { isActive: true } } : { user: { isActive: true } } }),
-    prisma.memberSubscription.count({ where: { ...(branchId ? { branchId } : {}), status: 'ACTIVE' } }),
+    prisma.memberSubscription.count({ where: { ...(branchId ? { branchId } : {}), status: 'ACTIVE', member: { user: { isActive: true } } } }),
     prisma.attendance.count({ where: { ...(branchId ? { branchId } : {}), checkInTime: { gte: today } } }),
     prisma.payment.findMany({ where: { ...(branchId ? { branchId } : {}), status: 'COMPLETED', paidAt: { gte: thirtyDaysAgo } } }),
   ]);
