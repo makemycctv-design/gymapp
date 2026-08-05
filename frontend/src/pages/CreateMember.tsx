@@ -18,9 +18,11 @@ export default function CreateMember({ user, dark, setPage }: Props) {
     packageId: '',
     trainerTier: 'FLOOR',
     assignedTrainerId: '',
+    branchId: '',
   });
   const [packages, setPackages] = useState<any[]>([]);
   const [trainers, setTrainers] = useState<any[]>([]);
+  const [branches, setBranches] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [credentials, setCredentials] = useState<any>(null);
@@ -28,6 +30,7 @@ export default function CreateMember({ user, dark, setPage }: Props) {
   useEffect(() => {
     apiFetch('/packages').then((data) => setPackages(Array.isArray(data) ? data : [])).catch(() => {});
     apiFetch('/trainers').then((data) => setTrainers(Array.isArray(data) ? data : [])).catch(() => {});
+    if (user.role === 'SUPER_ADMIN') apiFetch('/branches').then(d => setBranches(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -108,6 +111,15 @@ export default function CreateMember({ user, dark, setPage }: Props) {
       )}
 
       <form onSubmit={handleSubmit} className={`p-6 border rounded-lg space-y-4 ${cardClass}`}>
+        {user.role === 'SUPER_ADMIN' && (
+        <div>
+          <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Branch *</label>
+          <select name="branchId" value={form.branchId} onChange={handleChange} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputClass}`}>
+            <option value="">Select Branch...</option>
+            {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name} ({b.code})</option>)}
+          </select>
+        </div>
+        )}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={`block text-sm font-medium mb-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
