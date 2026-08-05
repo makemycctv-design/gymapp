@@ -27,3 +27,11 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+
+// POST /api/v1/branches/delete/:id - Deactivate a branch
+router.post('/delete/:id', requireRole('SUPER_ADMIN'), async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  await prisma.branch.update({ where: { id: req.params.id }, data: { isActive: false } });
+  res.json({ message: 'Branch deleted' });
+});
