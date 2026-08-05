@@ -30,6 +30,7 @@ export default function DashboardPage({ user, dark, setPage }: { user: any; dark
 
   const memberActions = [
     { icon: '📍', label: 'Check In', p: 'checkin' as Page },
+    { icon: '📦', label: 'My Package', p: 'my-package' as Page },
     { icon: '🏋️', label: 'Workout', p: 'workout' as Page },
     { icon: '🥗', label: 'Diet Plan', p: 'diet' as Page },
     { icon: '📈', label: 'Progress', p: 'progress' as Page },
@@ -40,6 +41,9 @@ export default function DashboardPage({ user, dark, setPage }: { user: any; dark
 
   const trainerActions = [
     { icon: '👥', label: 'My Clients', p: 'my-clients' as Page },
+    { icon: '🏋️', label: 'Workouts', p: 'workout' as Page },
+    { icon: '🥗', label: 'Diet Plans', p: 'diet' as Page },
+    { icon: '📏', label: 'Measurements', p: 'progress' as Page },
     { icon: '📦', label: 'Packages', p: 'packages' as Page },
     { icon: '✅', label: 'Attendance', p: 'attendance' as Page },
   ];
