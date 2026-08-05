@@ -45,7 +45,11 @@ export default function Trainers({ user, dark, setPage }: Props) {
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>Trainers</h1>
-        <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Use "Create Staff" to add new trainers</p>
+        {user.role === 'BRANCH_MANAGER' ? (
+          <button onClick={() => setPage('create-staff')} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium text-sm">+ Add Trainer</button>
+        ) : (
+          <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Use "Create Staff" to add new trainers</p>
+        )}
       </div>
 
       {error && <div className="p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg mb-4">{error}</div>}
