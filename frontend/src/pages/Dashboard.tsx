@@ -130,6 +130,8 @@ function ChangePasswordSection({ dark, card, sub }: { dark: boolean; card: strin
         </form>
       )}
     </div>
+  );
+}
 
 function StatCard({ label, value, dark }: { label: string; value: any; dark: boolean }) {
   return (
