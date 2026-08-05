@@ -63,3 +63,11 @@ router.post('/', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Reque
 });
 
 export default router;
+
+
+// POST /api/v1/packages/delete/:id - Deactivate a package
+router.post('/delete/:id', requireRole('BRANCH_MANAGER', 'SUPER_ADMIN'), async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  await prisma.membershipPackage.update({ where: { id: req.params.id }, data: { isActive: false } });
+  res.json({ message: 'Package deleted' });
+});

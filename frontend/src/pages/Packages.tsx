@@ -123,7 +123,10 @@ export default function Packages({ user, dark, setPage }: Props) {
                   <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{pkg.durationDays} days</p>
                 </div>
                 {isManager && (
-                  <button onClick={() => openEdit(pkg)} className={`text-sm px-3 py-1.5 rounded-lg border ${dark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}>Edit</button>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEdit(pkg)} className={`text-sm px-3 py-1.5 rounded-lg border ${dark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}>Edit</button>
+                    <button onClick={async () => { if (!confirm(`Delete package "${pkg.name}"?`)) return; try { await fetch('/api/v1/packages/delete/' + pkg.id, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); fetchPackages(); } catch {} }} className="text-sm px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600">Delete</button>
+                  </div>
                 )}
               </div>
               {pkg.maxFreezeDays > 0 && <p className={`text-xs mt-2 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>Freeze: {pkg.maxFreezeDays} days</p>}
