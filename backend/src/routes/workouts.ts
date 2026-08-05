@@ -7,9 +7,21 @@ router.use(authenticate);
 
 function getPrisma(req: Request): PrismaClient { return req.app.locals.prisma; }
 
-// GET /api/v1/workouts/my - Get member's active workout
+// GET /api/v1/workouts/my - Get member's active workout OR trainer's created workouts
 router.get('/my', async (req: Request, res: Response) => {
   const prisma = getPrisma(req);
+
+  // If trainer, show all plans they created
+  if (req.user!.role === 'PERSONAL_TRAINER' || req.user!.role === 'FLOOR_TRAINER') {
+    const plans = await prisma.workoutPlan.findMany({
+      where: { trainerId: req.user!.id },
+      include: { exercises: { orderBy: [{ dayOfWeek: 'asc' }, { orderIndex: 'asc' }] }, member: { include: { user: { select: { firstName: true, lastName: true } } } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return res.json(plans);
+  }
+
+  // If member, show their active plan
   const member = await prisma.memberProfile.findFirst({ where: { userId: req.user!.id } });
   if (!member) return res.status(404).json({ message: 'Member profile not found' });
 
