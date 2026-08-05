@@ -76,6 +76,7 @@ export default function Progress({ user, dark, setPage }: Props) {
             <thead><tr className={`border-b ${dark ? 'border-gray-700 bg-gray-700/50' : 'border-gray-200 bg-gray-50'}`}>
               {isTrainer && <th className="text-left py-2 px-3">Client</th>}
               <th className="text-left py-2 px-3">Date</th><th className="text-left py-2 px-3">Weight</th><th className="text-left py-2 px-3">Fat%</th><th className="text-left py-2 px-3">Muscle</th><th className="text-left py-2 px-3">Waist</th>
+              {isTrainer && <th className="text-left py-2 px-3"></th>}
             </tr></thead>
             <tbody>
               {data.map((m: any, i: number) => (
@@ -86,6 +87,7 @@ export default function Progress({ user, dark, setPage }: Props) {
                   <td className="py-2 px-3">{m.bodyFatPercentage || '-'}%</td>
                   <td className="py-2 px-3">{m.muscleMassKg || '-'} kg</td>
                   <td className="py-2 px-3">{m.waistCm || '-'} cm</td>
+                  {isTrainer && <td className="py-2 px-3"><button onClick={async () => { if (!confirm('Delete this measurement?')) return; try { await fetch('/api/v1/measurements/delete/' + m.id, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); apiFetch('/measurements/my').then(d => setData(Array.isArray(d) ? d : [])); } catch {} }} className="px-2 py-0.5 text-xs bg-red-500 text-white rounded hover:bg-red-600">Del</button></td>}
                 </tr>
               ))}
             </tbody>

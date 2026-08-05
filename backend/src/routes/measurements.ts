@@ -35,3 +35,11 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+
+// POST /api/v1/measurements/delete/:id
+router.post('/delete/:id', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  await prisma.bodyMeasurement.delete({ where: { id: req.params.id } });
+  res.json({ message: 'Measurement deleted' });
+});

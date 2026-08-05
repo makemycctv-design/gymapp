@@ -45,3 +45,11 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+
+// POST /api/v1/diets/delete/:id
+router.post('/delete/:id', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  await prisma.dietPlan.update({ where: { id: req.params.id }, data: { isActive: false } });
+  res.json({ message: 'Diet plan deleted' });
+});

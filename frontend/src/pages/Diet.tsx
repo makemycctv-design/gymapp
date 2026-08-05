@@ -72,7 +72,10 @@ export default function Diet({ user, dark, setPage }: Props) {
             <div key={plan.id} className={`p-4 border rounded-xl ${cardClass}`}>
               <div className="flex justify-between items-start">
                 <div><h3 className="font-bold">{plan.name}</h3><p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Client: {plan.member?.user?.firstName} {plan.member?.user?.lastName}</p></div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${plan.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{plan.isActive ? 'Active' : 'Inactive'}</span>
+                <div className="flex gap-2 items-center">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${plan.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{plan.isActive ? 'Active' : 'Inactive'}</span>
+                  <button onClick={async () => { if (!confirm('Delete this diet plan?')) return; try { await fetch('/api/v1/diets/delete/' + plan.id, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); apiFetch('/diets/my').then(setData); } catch {} }} className="px-2 py-0.5 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+                </div>
               </div>
               <div className={`text-sm mt-2 flex gap-4 ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
                 <span>{plan.targetCalories} kcal</span><span>P: {plan.proteinGrams}g</span><span>C: {plan.carbsGrams}g</span><span>F: {plan.fatGrams}g</span>

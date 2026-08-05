@@ -67,7 +67,10 @@ export default function Workout({ user, dark, setPage }: Props) {
             <div key={plan.id} className={`p-4 border rounded-xl ${cardClass}`}>
               <div className="flex justify-between items-start">
                 <div><h3 className="font-bold">{plan.name}</h3><p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Client: {plan.member?.user?.firstName} {plan.member?.user?.lastName}</p></div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${plan.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{plan.isActive ? 'Active' : 'Inactive'}</span>
+                <div className="flex gap-2 items-center">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${plan.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{plan.isActive ? 'Active' : 'Inactive'}</span>
+                  <button onClick={async () => { if (!confirm('Delete this workout plan?')) return; try { await fetch('/api/v1/workouts/delete/' + plan.id, { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }); apiFetch('/workouts/my').then(setData); } catch {} }} className="px-2 py-0.5 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+                </div>
               </div>
               {plan.description && <p className={`text-sm mt-2 ${dark ? 'text-gray-400' : 'text-gray-600'}`}>{plan.description}</p>}
               <p className={`text-xs mt-2 ${dark ? 'text-gray-500' : 'text-gray-400'}`}>Created: {new Date(plan.createdAt).toLocaleDateString()}</p>

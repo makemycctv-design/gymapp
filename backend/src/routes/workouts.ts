@@ -47,3 +47,11 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+
+// POST /api/v1/workouts/delete/:id
+router.post('/delete/:id', async (req: Request, res: Response) => {
+  const prisma = getPrisma(req);
+  await prisma.workoutPlan.update({ where: { id: req.params.id }, data: { isActive: false } });
+  res.json({ message: 'Workout deleted' });
+});
